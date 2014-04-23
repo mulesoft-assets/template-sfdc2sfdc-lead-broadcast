@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="endpoints">
+    <flow SubFlow="false" name="triggerFlow" type="http://www.mulesoft.org/schema/mule/core/flow" entity-id="f6a03085-59cc-4666-a79f-c2ffd9e76e6b">
+        <properties>
+            <property name="initialState"/>
+            <property name="processingStrategy2" value="synchronous"/>
+            <property name="processingStrategy" value="synchronous"/>
+            <property name="bussinessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="auxiliary;index" value="1"/>
+        </properties>
+        <description>This is the simpliest entry point to start the excecution of your Anypoint Template you should: 
+	* Define any inbound endpoint
+	* Handle any input parameter and transform it into the expected format by the mainFlow
+Here you should not: 
+	* Run validations against external systems
+	* Choose flow of your application based on input parameters</description>
+        <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#1">
+            <graphicalData x="0" y="0" width="0" height="0"/>
+            <scope name="fireup Lead synchronization" type="org.mule.tooling.ui.modules.core.endpoint.Poller" entity-id="Poll#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="cron-scheduler"/>
+                    <property name="frequency"/>
+                    <property name="fixed-frequency-scheduler"/>
+                    <property name="auxiliary;index" value="2"/>
+                    <property-collection name="@http://www.mulesoft.org/schema/mule/core/fixed-frequency-scheduler;0">
+                        <property name="startDelay" value="${polling.startDelayMillis}"/>
+                        <property name="frequency" value="${polling.frequency}"/>
+                        <property name="auxiliary;index" value="3"/>
+                        <property name="auxiliary;wrapIn" value="3"/>
+                    </property-collection>
+                    <property-collection name="@http://www.mulesoft.org/schema/mule/core/watermark;0">
+                        <property name="default-expression" value="${watermark.default.expression}"/>
+                        <property name="selector" value="MAX"/>
+                        <property name="selector-expression" value="#[payload.LastModifiedDate]"/>
+                        <property name="variable" value="lastQueryDate"/>
+                        <property name="auxiliary;index" value="4"/>
+                        <property name="auxiliary;wrapIn" value="4"/>
+                    </property-collection>
+                </properties>
+                <compartment entity-id="compartment#1">
+                    <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#2">
+                        <pattern name="query Contacts with filtering criteria from Salesforce Instance A" type="http://www.mulesoft.org/schema/mule/sfdc/sfdc-connector" entity-id="Salesforce#1">
+                            <graphicalData x="0" y="0" width="0" height="0"/>
+                            <properties>
+<property name=""/>
+<property name="fetchSize"/>
+<property name="proxyUsername"/>
+<property name="securityToken"/>
+<property name="proxyHost"/>
+<property name="query" value="Select Email, FirstName, LastName, Country, Id, LastModifiedDate, Owner.Id, Owner.Name, Owner.Type FROM Lead WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND Email != null"/>
+<property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/sfdc/query"/>
+<property name="proxyPort"/>
+<property name="password"/>
+<property name="url"/>
+<property name="username"/>
+<property name="sessionId"/>
+<property name="serviceEndpoint"/>
+<property name="accessTokenId"/>
+<property name="config-ref" value="SalesforceA"/>
+<property name="auxiliary;index" value="5"/>
+<property name="proxyPassword"/>
+                            </properties>
+                        </pattern>
+                    </lane>
+                </compartment>
+            </scope>
+            <pattern name="Batch Execute" type="http://www.mulesoft.org/schema/mule/batch/execute" entity-id="Batch Execute#1">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+                <properties>
+                    <property name="name" value="businessLogicBatch"/>
+                    <property name="auxiliary;index" value="6"/>
+                </properties>
+            </pattern>
+        </lane>
+    </flow>
+</mule-configuration>

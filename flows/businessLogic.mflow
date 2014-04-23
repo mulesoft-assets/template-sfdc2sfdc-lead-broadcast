@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="businessLogic">
+    <flow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="container" SubFlow="false" type="http://www.mulesoft.org/schema/mule/batch/job" entity-id="Batch#1">
+        <properties>
+            <property name="max-failed-records" value="0"/>
+            <property name="scheduling-strategy" value="ORDERED_SEQUENTIAL"/>
+            <property name="name" value="businessLogicBatch"/>
+            <property name="auxiliary;index" value="1"/>
+            <property name="updated"/>
+            <property-collection name="@http://www.mulesoft.org/schema/mule/batch/threading-profile;1941021231">
+                <property name="maxBufferSize" value=""/>
+                <property name="auxiliary;erased;threadWaitTimeout" value="true"/>
+                <property name="poolExhaustedAction" value="WAIT"/>
+                <property name="auxiliary;erased;maxThreadsActive" value="true"/>
+                <property name="threadWaitTimeout" value=""/>
+                <property name="auxiliary;erased;maxBufferSize" value="true"/>
+                <property name="doThreading" value="true"/>
+                <property name="auxiliary;erased;threadTTL" value="true"/>
+                <property name="maxThreadsIdle" value=""/>
+                <property name="maxThreadsActive" value=""/>
+                <property name="threadTTL" value=""/>
+                <property name="auxiliary;index" value="2"/>
+                <property name="auxiliary;erased;maxThreadsIdle" value="true"/>
+            </property-collection>
+        </properties>
+        <description></description>
+        <lane xsi:type="nestedContainer" name="Input" type="http://www.mulesoft.org/schema/mule/batch/input" hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="c7954897-1ee6-4066-a50c-6d3a7e06155d"/>
+        <lane xsi:type="nestedContainer" name="Process Records" type="http://www.mulesoft.org/schema/mule/batch/process-records" hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="919406b3-b689-4588-8a73-86abcfba39ef">
+            <scope type="http://www.mulesoft.org/schema/mule/batch/step" entity-id="Batch Step#1">
+                <properties>
+                    <property name="filter-expression"/>
+                    <property name="name" value="foreachLeadInAGetLeadBStep"/>
+                    <property name="accept-policy"/>
+                    <property name="auxiliary;index" value="4"/>
+                </properties>
+                <compartment entity-id="compartment#1">
+                    <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#1">
+                        <scope name="store payload in variable idInB" type="org.mule.tooling.ui.modules.core.scope.enricher" entity-id="Message Enricher#1">
+                            <graphicalData x="0" y="0" width="0" height="0"/>
+                            <properties>
+<property name="source" value="#[payload]"/>
+<property name="target" value="#[recordVars['idInB']]"/>
+<property name="auxiliary;index" value="5"/>
+                            </properties>
+                            <compartment entity-id="compartment#2">
+<lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#2">
+    <pattern name="query Lead from Salesforce Instance B" type="http://www.mulesoft.org/schema/mule/sfdc/sfdc-connector" entity-id="Salesforce#1">
+        <graphicalData x="0" y="0" width="0" height="0"/>
+        <properties>
+            <property name=""/>
+            <property name="proxyUsername"/>
+            <property name="securityToken"/>
+            <property name="proxyHost"/>
+            <property name="query" value="SELECT Id FROM Lead WHERE Email = '#[payload['Email']]'"/>
+            <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/sfdc/query-single"/>
+            <property name="proxyPort"/>
+            <property name="password"/>
+            <property name="url"/>
+            <property name="username"/>
+            <property name="sessionId"/>
+            <property name="serviceEndpoint"/>
+            <property name="accessTokenId"/>
+            <property name="config-ref" value="SalesforceB"/>
+            <property name="auxiliary;index" value="6"/>
+            <property name="proxyPassword"/>
+        </properties>
+        <description></description>
+    </pattern>
+</lane>
+                            </compartment>
+                        </scope>
+                    </lane>
+                </compartment>
+            </scope>
+            <scope type="http://www.mulesoft.org/schema/mule/batch/step" entity-id="Batch Step#2">
+                <properties>
+                    <property name="filter-expression" value="! ('syncAccount'=='${account.sync.policy}')"/>
+                    <property name="name" value="findOrCreateOwnerInBSetp"/>
+                    <property name="accept-policy"/>
+                    <property name="auxiliary;index" value="7"/>
+                </properties>
+                <compartment entity-id="compartment#3">
+                    <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#3">
+                        <splitter index="8" name="Choice" type="org.mule.tooling.ui.modules.core.pattern.cbr" entity-id="Choice#1">
+                            <graphicalData x="0" y="0" width="0" height="0"/>
+                            <properties>
+<property name=";INDEX" value="8"/>
+<property-collection name="34e62541-d624-423f-8055-a63eb653f218">
+    <property name="choice.expression" value="#[payload['Owner'] != null]"/>
+    <property-collection name="choice.attributes">
+        <property name="expression" value="#[payload['Owner'] != null]"/>
+    </property-collection>
+</property-collection>
+<property-collection name="d91f545e-b2a6-4806-8339-76508079bbeb">
+    <property name="choice.otherwise" value="true"/>
+    <property-collection name="choice.attributes"/>
+</property-collection>
+                            </properties>
+                            <pattern name="Choice" type="org.mule.tooling.ui.modules.core.pattern.cbr" entity-id="Choice#2">
+<properties>
+    <property name=";INDEX" value="8"/>
+    <property-collection name="34e62541-d624-423f-8055-a63eb653f218">
+        <property name="choice.expression" value="#[payload['Owner'] != null]"/>
+        <property-collection name="choice.attributes">
+            <property name="expression" value="#[payload['Owner'] != null]"/>
+        </property-collection>
+    </property-collection>
+    <property-collection name="d91f545e-b2a6-4806-8339-76508079bbeb">
+        <property name="choice.otherwise" value="true"/>
+        <property-collection name="choice.attributes"/>
+    </property-collection>
+</properties>
+                            </pattern>
+                            <compartment entity-id="compartment#4">
+<lane hadOnlyOneElement="false" index="10" isChoiceOtherwiseLane="false" entity-id="34e62541-d624-423f-8055-a63eb653f218">
+    <scope name="store result in ownerInB" type="org.mule.tooling.ui.modules.core.scope.enricher" entity-id="Message Enricher#2">
+        <graphicalData x="0" y="0" width="0" height="0"/>
+        <properties>
+            <property name="source" value="#[payload]"/>
+            <property name="target" value="#[flowVars['ownerInB']]"/>
+            <property name="auxiliary;index" value="10"/>
+        </properties>
+        <compartment entity-id="compartment#5">
+            <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#4">
+                <pattern name="query Owner in  Salesforce Instance B" type="http://www.mulesoft.org/schema/mule/sfdc/sfdc-connector" entity-id="Salesforce#2">
+                    <graphicalData x="0" y="0" width="0" height="0"/>
+                    <properties>
+                        <property name=""/>
+                        <property name="proxyUsername"/>
+                        <property name="securityToken"/>
+                        <property name="proxyHost"/>
+                        <property name="query" value="SELECT Id, Name FROM User WHERE Name = '#[payload['Owner']['Name']]'"/>
+                        <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/sfdc/query-single"/>
+                        <property name="proxyPort"/>
+                        <property name="password"/>
+                        <property name="url"/>
+                        <property name="username"/>
+                        <property name="sessionId"/>
+                        <property name="serviceEndpoint"/>
+                        <property name="accessTokenId"/>
+                        <property name="config-ref" value="SalesforceB"/>
+                        <property name="auxiliary;index" value="11"/>
+                        <property name="proxyPassword"/>
+                    </properties>
+                    <description></description>
+                </pattern>
+            </lane>
+        </compartment>
+    </scope>
+    <splitter index="12" name="Choice" type="org.mule.tooling.ui.modules.core.pattern.cbr" entity-id="Choice#3">
+        <graphicalData x="0" y="0" width="0" height="0"/>
+        <properties>
+            <property name=";INDEX" value="12"/>
+            <property-collection name="68a3e9f0-04fc-4d80-8260-93850d8c92a3">
+                <property name="choice.expression" value="#[flowVars['ownerInB'] is NullPayload]"/>
+                <property-collection name="choice.attributes">
+                    <property name="expression" value="#[flowVars['ownerInB'] is NullPayload]"/>
+                </property-collection>
+            </property-collection>
+            <property-collection name="cd2e61d8-f575-4462-b77f-9df158a7094c">
+                <property name="choice.otherwise" value="true"/>
+                <property-collection name="choice.attributes"/>
+            </property-collection>
+        </properties>
+        <pattern name="Choice" type="org.mule.tooling.ui.modules.core.pattern.cbr" entity-id="Choice#4">
+            <properties>
+                <property name=";INDEX" value="12"/>
+                <property-collection name="68a3e9f0-04fc-4d80-8260-93850d8c92a3">
+                    <property name="choice.expression" value="#[flowVars['ownerInB'] is NullPayload]"/>
+                    <property-collection name="choice.attributes">
+                        <property name="expression" value="#[flowVars['ownerInB'] is NullPayload]"/>
+                    </property-collection>
+                </property-collection>
+                <property-collection name="cd2e61d8-f575-4462-b77f-9df158a7094c">
+                    <property name="choice.otherwise" value="true"/>
+                    <property-collection name="choice.attributes"/>
+                </property-collection>
+            </properties>
+        </pattern>
+        <compartment entity-id="compartment#6">
+            <lane hadOnlyOneElement="false" index="14" isChoiceOtherwiseLane="false" entity-id="68a3e9f0-04fc-4d80-8260-93850d8c92a3">
+                <scope name="store result in idOfOwnerInB" type="org.mule.tooling.ui.modules.core.scope.enricher" entity-id="Message Enricher#3">
+                    <graphicalData x="0" y="0" width="0" height="0"/>
+                    <properties>
+                        <property name="source"/>
+                        <property name="target" value="#[recordVars['idOfOwnerInB']]"/>
+                        <property name="auxiliary;index" value="14"/>
+                    </properties>
+                    <compartment entity-id="compartment#7">
+                        <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#5">
+                            <scope name="Processor Chain" type="http://www.mulesoft.org/schema/mule/core/processor-chain" entity-id="Processor Chain#1">
+<graphicalData x="0" y="0" width="0" height="0"/>
+<properties>
+    <property name="auxiliary;index" value="15"/>
+</properties>
+<compartment entity-id="compartment#8">
+    <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#6">
+        <pattern name="remove unnecessary fields" type="http://www.mulesoft.org/schema/mule/core/expression-component" entity-id="Expression#1">
+            <graphicalData x="0" y="0" width="0" height="0"/>
+            <properties>
+                <property name="expression" value="payload['Owner'].remove('Id');"/>
+                <property name="file"/>
+                <property name="evaluator"/>
+                <property name="auxiliary;index" value="16"/>
+            </properties>
+        </pattern>
+        <pattern name="Set Payload" type="http://www.mulesoft.org/schema/mule/core/set-payload" entity-id="Set Payload#1">
+            <graphicalData x="0" y="0" width="0" height="0"/>
+            <properties>
+                <property name="value" value="#[ [payload['Owner']]]"/>
+                <property name="auxiliary;index" value="17"/>
+            </properties>
+        </pattern>
+        <pattern name="create Owner in Salesforce Instance B" type="http://www.mulesoft.org/schema/mule/sfdc/sfdc-connector" entity-id="Salesforce#3">
+            <graphicalData x="0" y="0" width="0" height="0"/>
+            <properties>
+                <property name=""/>
+                <property name="proxyUsername"/>
+                <property name="securityToken"/>
+                <property name="proxyHost"/>
+                <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/sfdc/create"/>
+                <property name="proxyPort"/>
+                <property name="type" value="User"/>
+                <property name="password"/>
+                <property name="url"/>
+                <property name="username"/>
+                <property name="sessionId"/>
+                <property name="serviceEndpoint"/>
+                <property name="accessTokenId"/>
+                <property name="config-ref" value="SalesforceB"/>
+                <property name="auxiliary;index" value="18"/>
+                <property name="proxyPassword"/>
+                <property-collection name="@http://www.mulesoft.org/schema/mule/sfdc/create-objectss;0">
+                    <property name="ref" value="#[payload]"/>
+                    <property name="auxiliary;index" value="19"/>
+                    <property name="auxiliary;wrapIn" value="19"/>
+                </property-collection>
+            </properties>
+        </pattern>
+        <pattern name="get new Owner id" type="http://www.mulesoft.org/schema/mule/core/expression-transformer" entity-id="Expression#2">
+            <graphicalData x="0" y="0" width="0" height="0"/>
+            <properties>
+                <property name="expression" value="#[payload[0].getId()]"/>
+                <property name="returnClass"/>
+                <property name="ignoreBadInput"/>
+                <property name="returnSourceIfNull"/>
+                <property name="name"/>
+                <property name="custom-evaluator"/>
+                <property name="encoding"/>
+                <property name="evaluator"/>
+                <property name="auxiliary;index" value="20"/>
+                <property name="mimeType"/>
+            </properties>
+        </pattern>
+    </lane>
+</compartment>
+                            </scope>
+                        </lane>
+                    </compartment>
+                </scope>
+            </lane>
+            <lane hadOnlyOneElement="false" index="22" isChoiceOtherwiseLane="true" entity-id="cd2e61d8-f575-4462-b77f-9df158a7094c">
+                <scope name="store result in idOfOwnerInB" type="org.mule.tooling.ui.modules.core.scope.enricher" entity-id="Message Enricher#4">
+                    <graphicalData x="0" y="0" width="0" height="0"/>
+                    <properties>
+                        <property name="source"/>
+                        <property name="target" value="#[recordVars['idOfOwnerInB']]"/>
+                        <property name="auxiliary;index" value="22"/>
+                    </properties>
+                    <compartment entity-id="compartment#9">
+                        <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#7">
+                            <pattern name="get new owner id" type="http://www.mulesoft.org/schema/mule/core/expression-transformer" entity-id="Expression#3">
+<graphicalData x="0" y="0" width="0" height="0"/>
+<properties>
+    <property name="expression" value="#[flowVars['ownerInB']['Id']]"/>
+    <property name="returnClass"/>
+    <property name="ignoreBadInput"/>
+    <property name="returnSourceIfNull"/>
+    <property name="name"/>
+    <property name="custom-evaluator"/>
+    <property name="encoding"/>
+    <property name="evaluator"/>
+    <property name="auxiliary;index" value="23"/>
+    <property name="mimeType"/>
+</properties>
+                            </pattern>
+                        </lane>
+                    </compartment>
+                </scope>
+            </lane>
+        </compartment>
+    </splitter>
+    <pattern name="set Owner ID" type="http://www.mulesoft.org/schema/mule/core/expression-component" entity-id="Expression#4">
+        <graphicalData x="0" y="0" width="0" height="0"/>
+        <properties>
+            <property name="expression" value="payload.put('OwnerId', recordVars['idOfOwnerInB']);"/>
+            <property name="file"/>
+            <property name="evaluator"/>
+            <property name="auxiliary;index" value="24"/>
+        </properties>
+    </pattern>
+</lane>
+<lane hadOnlyOneElement="false" index="26" isChoiceOtherwiseLane="true" entity-id="d91f545e-b2a6-4806-8339-76508079bbeb">
+    <pattern name="Logger" type="http://www.mulesoft.org/schema/mule/core/logger" entity-id="Logger#1">
+        <graphicalData x="0" y="0" width="0" height="0"/>
+        <properties>
+            <property name="message" value="There is no Owner assigned to this Lead. Doing nothing"/>
+            <property name="category"/>
+            <property name="level" value="INFO"/>
+            <property name="auxiliary;index" value="26"/>
+        </properties>
+    </pattern>
+</lane>
+                            </compartment>
+                        </splitter>
+                    </lane>
+                </compartment>
+            </scope>
+            <scope type="http://www.mulesoft.org/schema/mule/batch/step" entity-id="Batch Step#3">
+                <properties>
+                    <property name="filter-expression" value="! ('assignDummyAccount'=='${account.sync.policy}')"/>
+                    <property name="name" value="setDummyOwnerIdStep"/>
+                    <property name="accept-policy"/>
+                    <property name="auxiliary;index" value="27"/>
+                </properties>
+                <compartment entity-id="compartment#10">
+                    <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#8">
+                        <pattern name="set Owner ID" type="http://www.mulesoft.org/schema/mule/core/expression-component" entity-id="Expression#5">
+                            <graphicalData x="0" y="0" width="0" height="0"/>
+                            <properties>
+<property name="expression" value="payload.put('OwnerId', '${account.id.in.b}');"/>
+<property name="file"/>
+<property name="evaluator"/>
+<property name="auxiliary;index" value="28"/>
+                            </properties>
+                        </pattern>
+                    </lane>
+                </compartment>
+            </scope>
+            <scope type="http://www.mulesoft.org/schema/mule/batch/step" entity-id="Batch Step#4">
+                <properties>
+                    <property name="filter-expression"/>
+                    <property name="name" value="foreachLeadInAUpsertLeadInBStep"/>
+                    <property name="accept-policy"/>
+                    <property name="auxiliary;index" value="29"/>
+                </properties>
+                <compartment entity-id="compartment#11">
+                    <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#9">
+                        <pattern name="set Id for upsert" type="http://www.mulesoft.org/schema/mule/core/expression-component" entity-id="Expression#6">
+                            <graphicalData x="0" y="0" width="0" height="0"/>
+                            <properties>
+<property name="expression" value="if (recordVars['idInB'] instanceof NullPayload) {&#xA;&#x9;&#x9;         &#x9;&#x9;payload.remove('Id') &#xA;&#x9;&#x9;      &#x9;&#x9;} else { &#xA;&#x9;&#x9;        &#x9;&#x9;&#x9;payload.put('Id',recordVars['idInB'].get('Id'))} &#xA;&#x9;  &#x9;&#x9;&#x9;"/>
+<property name="file"/>
+<property name="evaluator"/>
+<property name="auxiliary;index" value="30"/>
+                            </properties>
+                        </pattern>
+                        <pattern name="remove LastModifiedDate for upsert" type="http://www.mulesoft.org/schema/mule/core/expression-component" entity-id="Expression#7">
+                            <graphicalData x="0" y="0" width="0" height="0"/>
+                            <properties>
+<property name="expression" value="payload.remove('Owner');&#xA;payload.remove('LastModifiedDate');&#xA;&#x9;  &#x9;&#x9;&#x9;"/>
+<property name="file"/>
+<property name="evaluator"/>
+<property name="auxiliary;index" value="31"/>
+                            </properties>
+                        </pattern>
+                        <scope name="Batch Commit" type="http://www.mulesoft.org/schema/mule/batch/commit" entity-id="Batch Commit#1">
+                            <graphicalData x="0" y="0" width="0" height="0"/>
+                            <properties>
+<property name="streaming"/>
+<property name="auxiliary;index" value="32"/>
+<property name="size" value="200"/>
+                            </properties>
+                            <compartment entity-id="compartment#12">
+<lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#10">
+    <pattern name="log 'Lead objects to update/create'" type="http://www.mulesoft.org/schema/mule/core/logger" entity-id="Logger#2">
+        <graphicalData x="0" y="0" width="0" height="0"/>
+        <properties>
+            <property name="message" value="Lead to update/create: #[payload]"/>
+            <property name="category"/>
+            <property name="level" value="INFO"/>
+            <property name="auxiliary;index" value="33"/>
+        </properties>
+    </pattern>
+    <pattern name="upsert Leads in Org B" type="http://www.mulesoft.org/schema/mule/sfdc/sfdc-connector" entity-id="Salesforce#4">
+        <graphicalData x="0" y="0" width="0" height="0"/>
+        <properties>
+            <property name="" value=""/>
+            <property name="proxyUsername" value=""/>
+            <property name="securityToken" value=""/>
+            <property name="proxyHost" value=""/>
+            <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/sfdc/upsert"/>
+            <property name="proxyPort" value="80"/>
+            <property name="type" value="Lead"/>
+            <property name="password" value=""/>
+            <property name="url" value=""/>
+            <property name="externalIdFieldName" value="Id"/>
+            <property name="username" value=""/>
+            <property name="updated"/>
+            <property name="sessionId" value=""/>
+            <property name="serviceEndpoint" value=""/>
+            <property name="accessTokenId" value=""/>
+            <property name="config-ref" value="SalesforceB"/>
+            <property name="auxiliary;index" value="34"/>
+            <property name="proxyPassword" value=""/>
+            <property-collection name="@http://www.mulesoft.org/schema/mule/sfdc/upsert-objectss;1">
+                <property name="ref" value="#[payload]"/>
+                <property name="auxiliary;index" value="35"/>
+            </property-collection>
+        </properties>
+        <description></description>
+    </pattern>
+</lane>
+                            </compartment>
+                        </scope>
+                    </lane>
+                </compartment>
+            </scope>
+            <properties>
+                <property name="auxiliary;index" value="3"/>
+            </properties>
+        </lane>
+        <lane xsi:type="nestedContainer" name="On Complete" type="http://www.mulesoft.org/schema/mule/batch/on-complete" hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="3c7af744-356c-4105-a880-37d15a716785">
+            <pattern name="transform BatchJobInstance to JSON" type="http://www.mulesoft.org/schema/mule/json/object-to-json-transformer" entity-id="Object to JSON#1">
+                <properties>
+                    <property name="sourceClass"/>
+                    <property name="returnClass"/>
+                    <property name="ignoreBadInput"/>
+                    <property name="encoding"/>
+                    <property name="mapper-ref"/>
+                    <property name="auxiliary;index" value="37"/>
+                    <property name="mimeType"/>
+                </properties>
+            </pattern>
+            <pattern name="log 'broacast has finished'" type="http://www.mulesoft.org/schema/mule/core/logger" entity-id="Logger#3">
+                <properties>
+                    <property name="message" value="One Way Sync has finished: #[payload]"/>
+                    <property name="category"/>
+                    <property name="level" value="INFO"/>
+                    <property name="auxiliary;index" value="38"/>
+                </properties>
+            </pattern>
+            <properties>
+                <property name="auxiliary;index" value="36"/>
+            </properties>
+        </lane>
+        <containerBehavior>default</containerBehavior>
+    </flow>
+</mule-configuration>

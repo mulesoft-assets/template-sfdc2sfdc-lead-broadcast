@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="errorHandling">
+    <global-element name="Choice Exception Strategy" type="http://www.mulesoft.org/schema/mule/core/choice-exception-strategy" entity-id="Choice Exception Strategy#1">
+        <properties>
+            <property name="name" value="defaultChoiceExceptionStrategy"/>
+            <property name="auxiliary;index" value="1"/>
+        </properties>
+        <compartment>
+            <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#1">
+                <scope name="Catch Exception Strategy" type="http://www.mulesoft.org/schema/mule/core/catch-exception-strategy" entity-id="Catch Exception Strategy#1">
+                    <graphicalData x="0" y="0" width="0" height="0"/>
+                    <properties>
+                        <property name="labelConfigureConditionalExecutionUsingExpression"/>
+                        <property name="when" value="#[exception.causedBy(java.lang.Exception)]"/>
+                        <property name="enableNotifications"/>
+                        <property name="auxiliary;index" value="2"/>
+                    </properties>
+                    <compartment entity-id="compartment#1">
+                        <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#2">
+                            <pattern name="Logger" type="http://www.mulesoft.org/schema/mule/core/logger" entity-id="Logger#1">
+<graphicalData x="0" y="0" width="0" height="0"/>
+<properties>
+    <property name="message"/>
+    <property name="category"/>
+    <property name="level" value="INFO"/>
+    <property name="auxiliary;index" value="3"/>
+</properties>
+                            </pattern>
+                        </lane>
+                    </compartment>
+                </scope>
+            </lane>
+        </compartment>
+    </global-element>
+</mule-configuration>

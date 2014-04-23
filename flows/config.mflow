@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="config">
+    <global-element name="Property Placeholder" type="http://www.springframework.org/schema/context/property-placeholder" entity-id="Property Placeholder#1">
+        <properties>
+            <property name="location" value="common.properties, mule.${mule.env}.properties"/>
+            <property name="properties-ref"/>
+            <property name="file-encoding"/>
+            <property name="order"/>
+            <property name="ignore-resource-not-found"/>
+            <property name="ignore-unresolvable"/>
+            <property name="local-override"/>
+            <property name="system-properties-mode"/>
+            <property name="auxiliary;index" value="1"/>
+        </properties>
+    </global-element>
+    <global-element name="Salesforce" type="http://www.mulesoft.org/schema/mule/sfdc/config" entity-id="Salesforce#1">
+        <properties>
+            <property name="name" value="SalesforceA"/>
+            <property name="username" value="${sfdc.a.username}"/>
+            <property name="password" value="${sfdc.a.password}"/>
+            <property name="securityToken" value="${sfdc.a.securityToken}"/>
+            <property name="url" value="${sfdc.a.url}"/>
+            <property name="proxyHost"/>
+            <property name="proxyPort"/>
+            <property name="proxyUsername"/>
+            <property name="proxyPassword"/>
+            <property name="sessionId"/>
+            <property name="serviceEndpoint"/>
+            <property name="auxiliary;metauseMetaData"/>
+            <property name="timeObjectStore-ref"/>
+            <property name="assignmentRuleId"/>
+            <property name="clientId"/>
+            <property name="batchSobjectMaxDepth"/>
+            <property name="allowFieldTruncationSupport"/>
+            <property name="useDefaultRule"/>
+            <property name="auxiliary;index" value="2"/>
+            <property-collection name="@http://www.mulesoft.org/schema/mule/sfdc/connection-pooling-profile;0">
+                <property name="exhaustedAction" value="WHEN_EXHAUSTED_GROW"/>
+                <property name="auxiliary;wrapIn" value="3"/>
+                <property name="auxiliary;index" value="3"/>
+                <property name="initialisationPolicy" value="INITIALISE_ONE"/>
+            </property-collection>
+        </properties>
+    </global-element>
+    <global-element name="Salesforce" type="http://www.mulesoft.org/schema/mule/sfdc/config" entity-id="Salesforce#2">
+        <properties>
+            <property name="name" value="SalesforceB"/>
+            <property name="username" value="${sfdc.b.username}"/>
+            <property name="password" value="${sfdc.b.password}"/>
+            <property name="securityToken" value="${sfdc.b.securityToken}"/>
+            <property name="url" value="${sfdc.b.url}"/>
+            <property name="proxyHost"/>
+            <property name="proxyPort"/>
+            <property name="proxyUsername"/>
+            <property name="proxyPassword"/>
+            <property name="sessionId"/>
+            <property name="serviceEndpoint"/>
+            <property name="auxiliary;metauseMetaData"/>
+            <property name="timeObjectStore-ref"/>
+            <property name="assignmentRuleId"/>
+            <property name="clientId"/>
+            <property name="batchSobjectMaxDepth"/>
+            <property name="allowFieldTruncationSupport"/>
+            <property name="useDefaultRule"/>
+            <property name="auxiliary;index" value="4"/>
+            <property-collection name="@http://www.mulesoft.org/schema/mule/sfdc/connection-pooling-profile;0">
+                <property name="exhaustedAction" value="WHEN_EXHAUSTED_GROW"/>
+                <property name="auxiliary;wrapIn" value="5"/>
+                <property name="auxiliary;index" value="5"/>
+                <property name="initialisationPolicy" value="INITIALISE_ONE"/>
+            </property-collection>
+        </properties>
+    </global-element>
+</mule-configuration>

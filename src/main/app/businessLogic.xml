@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
+xmlns="http://www.mulesoft.org/schema/mule/core" 
+xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+xmlns:spring="http://www.springframework.org/schema/beans" 
+xmlns:json="http://www.mulesoft.org/schema/mule/json"
+version="EE-3.5.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+    <batch:job name="businessLogicBatch">
+        <batch:threading-profile poolExhaustedAction="WAIT"/>
+        <batch:process-records>
+            <batch:step name="foreachLeadInAGetLeadBStep">
+            	<enricher source="#[payload]" target="#[recordVars['idInB']]" doc:name="store payload in variable idInB">
+        			<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Lead WHERE Email = '#[payload['Email']]'" doc:name="query Lead from Salesforce Instance B"/>
+        		</enricher>
+            </batch:step>
+             <batch:step name="findOrCreateOwnerInBSetp" filter-expression="! ('syncAccount'=='${account.sync.policy}')">
+                <choice doc:name="Choice">
+                	<when expression="#[payload['Owner'] != null]">
+                <enricher source="#[payload]" target="#[flowVars['ownerInB']]" doc:name="store result in ownerInB">
+                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name FROM User WHERE Name = '#[payload['Owner']['Name']]'" doc:name="query Owner in  Salesforce Instance B"/>
+                </enricher>
+                <choice doc:name="Choice">
+                    <when expression="#[flowVars['ownerInB'] is NullPayload]">
+                        <enricher doc:name="store result in idOfOwnerInB" target="#[recordVars['idOfOwnerInB']]">
+	                        <processor-chain doc:name="Processor Chain">
+                                <expression-component doc:name="remove unnecessary fields"><![CDATA[payload['Owner'].remove('Id');]]></expression-component>
+                                <set-payload value="#[ [payload['Owner']]]" doc:name="Set Payload"/>
+       		                     <sfdc:create config-ref="SalesforceB" type="User" doc:name="create Owner in Salesforce Instance B">
+       	    	                     <sfdc:objects ref="#[payload]"/>
+       	        	             </sfdc:create>
+                                <expression-transformer expression="#[payload[0].getId()]" doc:name="get new Owner id"/>
+	                        </processor-chain>
+                        </enricher>
+                    </when>
+                    <otherwise>
+                        <enricher target="#[recordVars['idOfOwnerInB']]" doc:name="store result in idOfOwnerInB">
+     	                   <expression-transformer expression="#[flowVars['ownerInB']['Id']]" doc:name="get new owner id"/>
+                        </enricher>
+                    </otherwise>
+                </choice>
+                <expression-component doc:name="set Owner ID"><![CDATA[payload.put('OwnerId', recordVars['idOfOwnerInB']);]]></expression-component>
+                	</when>
+                    <otherwise>
+                        <logger level="INFO" doc:name="Logger" message="There is no Owner assigned to this Lead. Doing nothing"/>
+                    </otherwise>
+                </choice>
+            </batch:step>
+            <batch:step name="setDummyOwnerIdStep" filter-expression="! ('assignDummyAccount'=='${account.sync.policy}')">
+                <expression-component doc:name="set Owner ID"><![CDATA[payload.put('OwnerId', '${account.id.in.b}');]]></expression-component>
+            </batch:step>
+            <batch:step name="foreachLeadInAUpsertLeadInBStep"> 
+            	<expression-component doc:name="set Id for upsert"><![CDATA[if (recordVars['idInB'] instanceof NullPayload) {
+		         		payload.remove('Id') 
+		      		} else { 
+		        			payload.put('Id',recordVars['idInB'].get('Id'))}]]> 
+	  			</expression-component>
+	            <expression-component doc:name="remove LastModifiedDate for upsert"><![CDATA[payload.remove('Owner');
+payload.remove('LastModifiedDate');
+	  			]]></expression-component>
+                <batch:commit size="200" doc:name="Batch Commit" >
+                	<logger message="Lead to update/create: #[payload]"	level="INFO" doc:name="log 'Lead objects to update/create'" />
+           	        <sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="Lead" doc:name="upsert Leads in Org B">
+            			<sfdc:objects ref="#[payload]"/>
+        			</sfdc:upsert>
+                </batch:commit>
+            </batch:step>
+        </batch:process-records>
+        <batch:on-complete>
+			<json:object-to-json-transformer	doc:name="transform BatchJobInstance to JSON" />
+			<logger level="INFO" doc:name="log 'broacast has finished'" message="One Way Sync has finished: #[payload]"/>
+        </batch:on-complete>
+    </batch:job>
+
+</mule>
