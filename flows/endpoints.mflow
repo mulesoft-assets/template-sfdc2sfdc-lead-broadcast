@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="endpoints">
-    <flow SubFlow="false" name="triggerFlow" type="http://www.mulesoft.org/schema/mule/core/flow" entity-id="f6a03085-59cc-4666-a79f-c2ffd9e76e6b">
+    <flow SubFlow="false" name="triggerFlow" type="http://www.mulesoft.org/schema/mule/core/flow" entity-id="631c6655-5c55-4b03-85cc-42c1a2404597">
         <properties>
             <property name="initialState"/>
             <property name="processingStrategy2" value="synchronous"/>
@@ -49,7 +49,7 @@ Here you should not:
 <property name="proxyUsername"/>
 <property name="securityToken"/>
 <property name="proxyHost"/>
-<property name="query" value="Select Email, FirstName, LastName, Country, Id, LastModifiedDate, Owner.Id, Owner.Name, Owner.Type FROM Lead WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND Email != null"/>
+<property name="query" value="Select Email, FirstName, LastName, Country, Company, Id, LastModifiedDate, Owner.Id, Owner.Name, Owner.Type FROM Lead WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND Email != null"/>
 <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/sfdc/query"/>
 <property name="proxyPort"/>
 <property name="password"/>
