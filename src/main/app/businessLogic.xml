@@ -21,7 +21,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
         			<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Lead WHERE Email = '#[payload['Email']]'" doc:name="query Lead from Salesforce Instance B"/>
         		</enricher>
             </batch:step>
-             <batch:step name="findOrCreateOwnerInBSetp" filter-expression="! ('syncAccount'=='${account.sync.policy}')">
+             <batch:step name="findOrCreateOwnerInBSetp" accept-expression="'syncAccount' == '${account.sync.policy}'">
                 <choice doc:name="Choice">
                 	<when expression="#[payload['Owner'] != null]">
                 <enricher source="#[payload]" target="#[flowVars['ownerInB']]" doc:name="store result in ownerInB">
@@ -53,7 +53,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
                     </otherwise>
                 </choice>
             </batch:step>
-            <batch:step name="setDummyOwnerIdStep" filter-expression="! ('assignDummyAccount'=='${account.sync.policy}')">
+            <batch:step name="setDummyOwnerIdStep" accept-expression="'assignDummyAccount' == '${account.sync.policy}'">
                 <expression-component doc:name="set Owner ID"><![CDATA[payload.put('OwnerId', '${account.id.in.b}');]]></expression-component>
             </batch:step>
             <batch:step name="foreachLeadInAUpsertLeadInBStep"> 
