@@ -1,4 +1,4 @@
-# Anypoint Template: SFDC to SFDC Contact Broadcast
+# Anypoint Template: SalesForce to SalesForce Lead Broadcast
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
@@ -15,30 +15,25 @@
  
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to syncronize Contacts between two Salesfoce orgs.
+As a Salesforce admin I want to syncronize Leads between two Salesfoce orgs.
 
-This Anypoint Template should serve as a foundation for setting an online sync of Contact from one SalesForce instance to another. Everytime there is a new Contact or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the Contact on the target org.
+This Anypoint Template should serve as a foundation for setting an online sync of Lead from one SalesForce instance to another. Everytime there is a new Lead or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the Lead on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
 As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
 The batch job is divided in Input, Process and On Complete stages.
-During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing users that match the filter criteria.
-During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
-The last step of the Process stage will group the users and create/update them in SFDC Org B.
+During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing Leads that match the filter criteria.
+During the Process stage, each SalesForce Lead will be filtered depending on, if it has an existing matching Lead in the SalesForce Org B.
+The last step of the Process stage will group the Leads and create/update them in SalesForce Org B.
 Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
 
 # Run it! <a name="runit"/>
-Simple steps to get SFDC to SFDC Contact Broadcast running.
 
-In any of the ways you would like to run this Anypoint Template, here is an example of the output you'll see after hitting the HTTP endpoint:
+In order to have the template up and running just complete the two following steps:
 
-<pre>
-<h1>Batch Process initiated</h1>
-<b>ID:</b>6eea3cc6-7c96-11e3-9a65-55f9f3ae584e<br/>
-<b>Records to Be Processed: </b>9<br/>
-<b>Start execution on: </b>Mon Jan 13 18:05:33 GMT-03:00 2014
-</pre>
+ 1. [Configure the application properties](#propertiestobeconfigured)
+ 2. Run it! ([on premise](#runonopremise) or [in Cloudhub](#runoncloudhub))
 
 ## Running on premise <a name="runonopremise"/>
 
@@ -62,7 +57,7 @@ Complete all properties in one of the property files, for example in [mule.prod.
 
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**. 
 
-Once your app is all set and started, there is no need to do anything else. Every time a Contact is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
+Once your app is all set and started, there is no need to do anything else. Every time a Lead is created or modified, it will be automatically synchronised to SalesForce Org B as long as it has an Email.
 
 ### Deploying your Anypoint Template on CloudHub <a name="deployingyouranypointtemplateoncloudhub"/>
  	
@@ -78,7 +73,6 @@ Once your app is all set and started, there is no need to do anything else. The 
 In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 
 ### Application configuration
-+ http.port `9090` 
 + polling.frequency `60000`
 + poll.startDelayMillis `0`
 + watermark.defaultExpression `YESTERDAY`
@@ -87,9 +81,9 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 
 **Note:** the property **account.sync.policy** can take any of the three following values: 
 
-+ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the contact over.
-+ **syncAccount**: it will try to create the contact's account should this is not pressent in the Salesforce instance B.
-+ **assignDummyAccount**: it will assign the cotact to an pre existing account in Salesforce instance B. For this it will use the value of  `account.id.in.b`. Finding the Id of the desired Account can be done by executing in your **Sales Force Developer Console** the following query: `SELECT Id, Name, Description FROM Account`.
++ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the Lead over.
++ **syncAccount**: it will try to create the Lead's account should this is not pressent in the Salesforce instance B.
++ **assignDummyAccount**: it will assign the Lead to an pre existing account in Salesforce instance B. For this it will use the value of  `account.id.in.b`. Finding the Id of the desired Account can be done by executing in your **Sales Force Developer Console** the following query: `SELECT Id, Name, Description FROM Account`.
 
 
 
@@ -108,13 +102,13 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 
 # API Calls <a name="apicalls"/>
 
-SalesForce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. User Broadcast Template calls to the API can be calculated using the formula:
+SalesForce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. Lead Broadcast Template calls to the API can be calculated using the formula:
 
 ***1 + X + X / 200***
 
-Being ***X*** the number of Users to be synchronized on each run. 
+Being ***X*** the number of Leads to be synchronized on each run. 
 
-The division by ***200*** is because, by default, Users are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+The division by ***200*** is because, by default, Leads are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
 
 For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
 
@@ -142,13 +136,13 @@ In the visual editor they can be found on the *Global Element* tab.
 ## businessLogic.xml<a name="businesslogicxml"/>
 Functional aspect of the Anypoint Template is implemented on this XML, directed by a batch job that will be responsible for creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Anypoint Template:
 
-1. Job execution is invoked from triggerFlow (inboundEndpoints.xml) everytime there is a new query executed asking for created/updated Contacts.
-2. During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
-3. The last step of the Process stage will group the users and create/update them in SFDC Org B.
+1. Job execution is invoked from triggerFlow (inboundEndpoints.xml) everytime there is a new query executed asking for created/updated Leads.
+2. During the Process stage, each SalesForce Lead will be filtered depending on, if it has an existing matching Lead in the SalesForce Org B.
+3. The last step of the Process stage will group the Leads and create/update them in SalesForce Org B.
 Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
 
 ## endpoints.xml<a name="endpointsxml"/>
-This is file is conformed by a Flow containing the Poll that will periodically query Sales Force for updated/created Contacts that meet the defined criteria in the query. And then executing the batch job process with the query results.
+This is file is conformed by a Flow containing the Poll that will periodically query Sales Force for updated/created Leads that meet the defined criteria in the query. And then executing the batch job process with the query results.
 
 ## errorHandling.xml<a name="errorhandlingxml"/>
 Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions.
