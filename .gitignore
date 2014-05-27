@@ -43,7 +43,16 @@ local.properties
 # Studio-specific #
 # --------------- #
 .studio/
+./flows/
 target/
-bin
-flows/
+**/*.mflow
 
+# --------------- #
+# Mule-specific #
+# --------------- #
+.mule/
+
+# --------------------------------------- #
+# Test credentials to be use locally only #
+# --------------------------------------- #
+src/test/resources/mule.test.properties

@@ -7,7 +7,7 @@
 	<artifactId>template-sfdc2sfdc-lead-broadcast</artifactId>
 	<packaging>mule</packaging>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>sfdc2sfdc-contact-broadcast Anypoint Template</name>
+	<name>template-sfdc2sfdc-lead-broadcast Anypoint Template</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,7 +17,7 @@
 		<munit.version>3.5-M2</munit.version>
 		<junit.version>4.9</junit.version>
 
-		<sfdc.version>5.4.3</sfdc.version>
+		<sfdc.version>5.4.6</sfdc.version>
 
 		<jdkName>JavaSE-1.6</jdkName>
 		<jdk.version>1.6</jdk.version>
@@ -66,27 +66,6 @@
 			</plugins>
 		</pluginManagement>
 		<plugins>
-			<!-- Integration Tests -->
-			<plugin>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.6</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<useFile>false</useFile>
-					<additionalClasspathElements>
-						<additionalClasspathElement>${MULE_HOME}/conf/</additionalClasspathElement>
-						<!-- Location of the mule licence in Bamboo muleLicenseKey.lic -->
-						<additionalClasspathElement>/home/j2ee-bamboo/license</additionalClasspathElement>
-					</additionalClasspathElements>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.mule.tools</groupId>
 				<artifactId>maven-mule-plugin</artifactId>
@@ -420,51 +399,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- for testing -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>mockobjects</groupId> -->
-<!-- 			<artifactId>mockobjects-core</artifactId> -->
-<!-- 			<version>0.09</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>junit</groupId> -->
-<!-- 			<artifactId>junit</artifactId> -->
-<!-- 			<version>${junit.version}</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.mule.tests</groupId> -->
-<!-- 			<artifactId>mule-tests-functional</artifactId> -->
-<!-- 			<version>${mule.version}</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.cloveretl</groupId> -->
-<!-- 			<artifactId>cloveretl-engine</artifactId> -->
-<!-- 			<version>${mule.version}</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.mule.modules</groupId> -->
-<!-- 			<artifactId>mule-module-devkit-support</artifactId> -->
-<!-- 			<version>${mule.version}</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.mulesoft.muleesb.modules</groupId> -->
-<!-- 			<artifactId>mule-module-batch-ee</artifactId> -->
-<!-- 			<version>${mule.version}</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.mulesoft.muleesb.modules</groupId> -->
-<!-- 			<artifactId>mule-module-batch-ee</artifactId> -->
-<!-- 			<version>${mule.version}</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 			<type>test-jar</type> -->
-<!-- 		</dependency> -->
-
 		<!-- Connectors -->
 		<dependency>
 			<groupId>org.mule.modules</groupId>
@@ -483,15 +417,6 @@
 			<id>mulesoft-releases</id>
 			<name>MuleSoft Releases</name>
 			<url>http://repository.mulesoft.org/releases/</url>
-		</repository>
-		<repository>
-			<id>oss-sonatype-snapshots</id>
-			<url>http://oss.sonatype.org/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>codehaus-snaphosts</id>
-			<name>Codehaus Snapshots</name>
-			<url>http://snapshots.repository.codehaus.org/</url>
 		</repository>
 		<repository>
 			<id>codehaus-releases</id>
