@@ -1,4 +1,4 @@
-# Anypoint Template: SalesForce to SalesForce Lead Broadcast
+# Anypoint Template: Salesforce to Salesforce Lead Broadcast
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
