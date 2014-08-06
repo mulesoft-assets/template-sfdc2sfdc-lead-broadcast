@@ -15,10 +15,10 @@ Here you should not:
        	<poll doc:name="fireup Lead synchronization" >
           	<fixed-frequency-scheduler frequency="${polling.frequency}" startDelay="${polling.startDelayMillis}"/>
           	<watermark variable="lastQueryDate" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-           	<sfdc:query config-ref="SalesforceA"  doc:name="query Leads with filtering criteria from Salesforce Instance A" query="Select Email, FirstName, LastName, Country, Company, Id, LastModifiedDate, Owner.Id, Owner.Name, Owner.Type FROM Lead WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND Email != null">
+           		<sfdc:query config-ref="SalesforceA"  doc:name="query Leads with filtering criteria from Salesforce Instance A" query="Select Email, FirstName, LastName, Country, Company, Id, LastModifiedDate, Owner.Id, Owner.Username, Owner.Email FROM Lead WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND Email != null">
           	</sfdc:query>
       	</poll>
-        <batch:execute name="businessLogicBatch" doc:name="Batch Execute"/>
+        <flow-ref name="mainFlow" doc:name="call mainFlow"/>
     </flow>
 
 </mule>

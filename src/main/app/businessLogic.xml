@@ -5,7 +5,7 @@ xmlns="http://www.mulesoft.org/schema/mule/core"
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:spring="http://www.springframework.org/schema/beans" 
 xmlns:json="http://www.mulesoft.org/schema/mule/json"
-version="EE-3.5.0" 
+version="EE-3.5.1" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
-    <batch:job name="businessLogicBatch">
+    <batch:job name="broadcastLeadBatch">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:process-records>
             <batch:step name="foreachLeadInAGetLeadBStep">
@@ -25,14 +25,33 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
                 <choice doc:name="Choice">
                 	<when expression="#[payload['Owner'] != null]">
                 <enricher source="#[payload]" target="#[flowVars['ownerInB']]" doc:name="store result in ownerInB">
-                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name FROM User WHERE Name = '#[payload['Owner']['Name']]'" doc:name="query Owner in Salesforce Instance B"/>
+                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Username FROM User WHERE Email = '#[payload['Owner']['Email']]'" doc:name="query Owner in Salesforce Instance B"/>
                 </enricher>
                 <choice doc:name="Choice">
                     <when expression="#[flowVars['ownerInB'] is NullPayload]">
+		                <enricher source="#[payload]" target="#[flowVars['ownerInA']]" doc:name="store result in ownerInA">
+		                    <sfdc:retrieve type="User"  config-ref="SalesforceA" doc:name="query origin Owner in Salesforce A to get all required field.">
+								<sfdc:ids>
+								    <sfdc:id>#[payload['Owner']['Id']]</sfdc:id>
+								</sfdc:ids>
+								<sfdc:fields>
+									<sfdc:field>Email</sfdc:field>
+									<sfdc:field>LastName</sfdc:field>
+									<sfdc:field>Alias</sfdc:field>
+									<sfdc:field>Username</sfdc:field>
+									<sfdc:field>LanguageLocaleKey</sfdc:field>
+									<sfdc:field>TimeZoneSidKey</sfdc:field>
+									<sfdc:field>LocaleSidKey</sfdc:field>
+									<sfdc:field>EmailEncodingKey</sfdc:field>
+								</sfdc:fields>
+		                    </sfdc:retrieve>
+		                </enricher>
                         <enricher doc:name="store result in idOfOwnerInB" target="#[recordVars['idOfOwnerInB']]">
 	                        <processor-chain doc:name="Processor Chain">
-                                <expression-component doc:name="remove unnecessary fields"><![CDATA[payload['Owner'].remove('Id');]]></expression-component>
-                                <set-payload value="#[ [payload['Owner']]]" doc:name="Set Payload"/>
+                                <expression-component doc:name="remove unnecessary fields"><![CDATA[flowVars['ownerInA'].get(0).remove('Id');]]></expression-component>
+                                <expression-component doc:name="assign ProfileId to the User"><![CDATA[flowVars['ownerInA'].get(0).put('ProfileId', '${sfdc.b.user.profile.id}');
+flowVars['ownerInA'].get(0).put('Username',  flowVars['ownerInA'].get(0).get('Username') + '.target');]]></expression-component>
+                                <set-payload value="#[ [flowVars['ownerInA'].get(0)]]" doc:name="set to the owner queried from the Instance A in var 'ownerInA'"/>
        		                     <sfdc:create config-ref="SalesforceB" type="User" doc:name="create Owner in Salesforce Instance B">
        	    	                     <sfdc:objects ref="#[payload]"/>
        	        	             </sfdc:create>
@@ -54,7 +73,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
                 </choice>
             </batch:step>
             <batch:step name="setDummyOwnerIdStep" accept-expression="'assignDummyAccount' == '${account.sync.policy}'">
-                <expression-component doc:name="set Owner ID"><![CDATA[payload.put('OwnerId', '${account.id.in.b}');]]></expression-component>
+                <expression-component doc:name="set Owner ID"><![CDATA[payload.put('OwnerId', '${sfdc.b.owner.id}');]]></expression-component>
             </batch:step>
             <batch:step name="foreachLeadInAUpsertLeadInBStep"> 
             	<expression-component doc:name="set Id for upsert"><![CDATA[if (recordVars['idInB'] instanceof NullPayload) {
@@ -64,6 +83,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 	  			</expression-component>
 	            <expression-component doc:name="remove LastModifiedDate for upsert"><![CDATA[payload.remove('Owner');
 payload.remove('LastModifiedDate');
+payload.remove('type');
 	  			]]></expression-component>
                 <batch:commit size="200" doc:name="Batch Commit" >
                 	<logger message="Lead to update/create: #[payload]"	level="INFO" doc:name="log 'Lead objects to update/create'" />
@@ -79,4 +99,8 @@ payload.remove('LastModifiedDate');
         </batch:on-complete>
     </batch:job>
 
+    <flow name="mainFlow" doc:name="mainFlow">
+        <batch:execute name="broadcastLeadBatch" doc:name="trigger broadcastLeadBatch"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="catch Exception and call defaultExceptionStrategy"/>
+    </flow>
 </mule>
