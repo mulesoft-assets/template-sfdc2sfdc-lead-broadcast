@@ -10,14 +10,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>template-sfdc2sfdc-lead-broadcast</artifactId>
 	<packaging>mule</packaging>
-	<version>1.0.4-SNAPSHOT</version>
+	<version>1.0.4</version>
 	<name>template-sfdc2sfdc-lead-broadcast Anypoint Template</name>
 
 	<scm>
 		<connection>scm:git:https://github.com/mulesoft/template-sfdc2sfdc-lead-broadcast.git</connection>
 		<developerConnection>scm:git:https://github.com/mulesoft/template-sfdc2sfdc-lead-broadcast.git</developerConnection>
 		<url>https://github.com/mulesoft/template-sfdc2sfdc-lead-broadcast</url>
-	  <tag>v1.0.1</tag>
+	  <tag>v1.0.4</tag>
   </scm>
 
 	<build>
