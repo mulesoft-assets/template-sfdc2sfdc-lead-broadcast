@@ -167,6 +167,15 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
 + sfdc.b.url `https://login.salesforce.com/services/Soap/u/26.0`
 
+The owner id used if assignDummyAccount is being configured. **Caution** This user needs to be able to insert leads.
+
++ sfdc.b.owner.id `00520000003D5JWAA0`
+
+SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. 
+Each SalesForce account has its own profiles. **Caution** This profile needs to be able to insert leads.
+
++ sfdc.b.user.profile.id `00ej0000000SjUFAA0`
+
 # API Calls <a name="apicalls"/>
 Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint template calls to the API can be calculated using the formula:
 

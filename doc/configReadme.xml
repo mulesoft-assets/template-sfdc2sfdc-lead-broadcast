@@ -67,6 +67,16 @@ Once your app is all set and started, there is no need to do anything else. Ever
 + sfdc.b.password `JoanBaez456`
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
 + sfdc.b.url `https://login.salesforce.com/services/Soap/u/26.0`
+
+The owner id used if assignDummyAccount is being configured. **Caution** This user needs to be able to insert leads.
+
++ sfdc.b.owner.id `00520000003D5JWAA0`
+
+SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. 
+Each SalesForce account has its own profiles. **Caution** This profile needs to be able to insert leads.
+
++ sfdc.b.user.profile.id `00ej0000000SjUFAA0`
+
 ]]>
 		</section>
 		<section id="api_calls">
