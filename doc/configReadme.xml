@@ -43,18 +43,8 @@ Once your app is all set and started, there is no need to do anything else. Ever
 		<section id="application_configuration">
 		<![CDATA[
 + polling.frequency `60000`
-+ polling.startDelayMillis `0`
-+ watermark.default.expression `YESTERDAY`
-+ account.sync.policy `syncAccount`
-+ sfdc.b.owner.id `001n0000003fMWXAA2`
-
-**Note:** the property **account.sync.policy** can take any of the three following values: 
-
-+ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the owner and it'll just move the Lead over.
-+ **syncAccount**: it will try to create the Lead's owner should this is not pressent in the Salesforce instance B.
-+ **assignDummyAccount**: it will assign the Lead to an pre existing owner in Salesforce instance B. For this it will use the value of  `sfdc.b.owner.id`. Finding the Id of the desired owner can be done by executing in your **Sales Force Developer Console** the following query: `SELECT Id, Name FROM User`.
-
-
++ poll.startDelayMillis `0`
++ watermark.defaultExpression `YESTERDAY`
 
 #### SalesForce Connector configuration for company A
 + sfdc.a.username `bob.dylan@orga`
@@ -67,16 +57,6 @@ Once your app is all set and started, there is no need to do anything else. Ever
 + sfdc.b.password `JoanBaez456`
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
 + sfdc.b.url `https://login.salesforce.com/services/Soap/u/26.0`
-
-The owner id used if assignDummyAccount is being configured. **Caution** This user needs to be able to insert leads.
-
-+ sfdc.b.owner.id `00520000003D5JWAA0`
-
-SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. 
-Each SalesForce account has its own profiles. **Caution** This profile needs to be able to insert leads.
-
-+ sfdc.b.user.profile.id `00ej0000000SjUFAA0`
-
 ]]>
 		</section>
 		<section id="api_calls">
@@ -104,7 +84,7 @@ Finally during the On Complete stage the Anypoint Template will logoutput statis
 		</section>
 		<section id="default_endpoints_xml">
 		<![CDATA[
-This is file is conformed by a Flow containing the Poll that will periodically query Salesforce for updated/created Accounts that meet the defined criteria in the query. And then executing the batch job process with the query results.
+This is file is conformed by a Flow containing the Poll that will periodically query Salesforce for updated/created Leads that meet the defined criteria in the query. And then executing the batch job process with the query results.
 ]]>
 		</section>
 	</sections>
