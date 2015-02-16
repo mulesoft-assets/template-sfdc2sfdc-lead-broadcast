@@ -5,7 +5,7 @@ xmlns="http://www.mulesoft.org/schema/mule/core"
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:spring="http://www.springframework.org/schema/beans" 
 xmlns:json="http://www.mulesoft.org/schema/mule/json"
-version="EE-3.5.0" 
+version="EE-3.5.2" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -21,7 +21,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
         			<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Lead WHERE Email = '#[payload['Email']]'" doc:name="query Lead from Salesforce Instance B"/>
         		</enricher>
             </batch:step>
-             <batch:step name="findOrCreateOwnerInBSetp" accept-expression="'syncAccount' == '${account.sync.policy}'">
+             <batch:step name="findOrCreateOwnerInBSetp" >
                 <choice doc:name="Choice">
                 	<when expression="#[payload['Owner'] != null]">
                 <enricher source="#[payload]" target="#[flowVars['ownerInB']]" doc:name="store result in ownerInB">
@@ -53,9 +53,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
                     </otherwise>
                 </choice>
             </batch:step>
-            <batch:step name="setDummyOwnerIdStep" accept-expression="'assignDummyAccount' == '${account.sync.policy}'">
-                <expression-component doc:name="set Owner ID"><![CDATA[payload.put('OwnerId', '${account.id.in.b}');]]></expression-component>
-            </batch:step>
+
             <batch:step name="foreachLeadInAUpsertLeadInBStep"> 
             	<expression-component doc:name="set Id for upsert"><![CDATA[if (recordVars['idInB'] instanceof NullPayload) {
 		         		payload.remove('Id') 

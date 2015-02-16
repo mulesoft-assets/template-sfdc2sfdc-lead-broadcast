@@ -45,16 +45,6 @@ Once your app is all set and started, there is no need to do anything else. Ever
 + polling.frequency `60000`
 + poll.startDelayMillis `0`
 + watermark.defaultExpression `YESTERDAY`
-+ account.sync.policy `syncAccount`
-+ account.id.in.b `001n0000003fMWXAA2`
-
-**Note:** the property **account.sync.policy** can take any of the three following values: 
-
-+ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the Lead over.
-+ **syncAccount**: it will try to create the Lead's account should this is not pressent in the Salesforce instance B.
-+ **assignDummyAccount**: it will assign the Lead to an pre existing account in Salesforce instance B. For this it will use the value of  `account.id.in.b`. Finding the Id of the desired Account can be done by executing in your **Sales Force Developer Console** the following query: `SELECT Id, Name, Description FROM Account`.
-
-
 
 #### SalesForce Connector configuration for company A
 + sfdc.a.username `bob.dylan@orga`
@@ -94,7 +84,7 @@ Finally during the On Complete stage the Anypoint Template will logoutput statis
 		</section>
 		<section id="default_endpoints_xml">
 		<![CDATA[
-This is file is conformed by a Flow containing the Poll that will periodically query Salesforce for updated/created Accounts that meet the defined criteria in the query. And then executing the batch job process with the query results.
+This is file is conformed by a Flow containing the Poll that will periodically query Salesforce for updated/created Leads that meet the defined criteria in the query. And then executing the batch job process with the query results.
 ]]>
 		</section>
 	</sections>
