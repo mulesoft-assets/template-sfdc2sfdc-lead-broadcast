@@ -21,7 +21,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
         			<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Lead WHERE Email = '#[payload['Email']]'" doc:name="query Lead from Salesforce Instance B"/>
         		</enricher>
             </batch:step>
-             <batch:step name="findOrCreateOwnerInBSetp" >
+             <batch:step name="findOrCreateOwnerInBSetp" accept-expression="'syncOwner' == '${account.sync.policy}'">
                 <choice doc:name="Choice">
                 	<when expression="#[payload['Owner'] != null]">
                 <enricher source="#[payload]" target="#[flowVars['ownerInB']]" doc:name="store result in ownerInB">
