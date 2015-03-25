@@ -5,7 +5,7 @@
 	</placeholders>
 	<sections>
 		<section id="use_case">
-As a Salesforce admin I want to syncronize Leads between two Salesfoce orgs.
+As a Salesforce admin I want to synchronize Leads between two Salesfoce orgs.
 
 This Anypoint Template should serve as a foundation for setting an online sync of Lead from one SalesForce instance to another. Everytime there is a new Lead or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the Lead on the target org.
 
@@ -16,7 +16,7 @@ The batch job is divided in Input, Process and On Complete stages.
 During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing Leads that match the filter criteria.
 During the Process stage, each SalesForce Lead will be filtered depending on, if it has an existing matching Lead in the SalesForce Org B.
 The last step of the Process stage will group the Leads and create/update them in SalesForce Org B.
-Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
+Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
 		</section>
 		<section id="considerations">
 <![CDATA[

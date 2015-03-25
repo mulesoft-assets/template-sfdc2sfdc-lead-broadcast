@@ -12,8 +12,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
