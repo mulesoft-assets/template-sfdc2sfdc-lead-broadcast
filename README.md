@@ -149,12 +149,12 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + polling.frequency `60000`
 + poll.startDelayMillis `0`
 + watermark.defaultExpression `YESTERDAY`
-+ account.sync.policy `syncOwner`
++ owner.sync.policy `syncOwner`
 
-**Note:** the property **account.sync.policy** can take any of the two following values: 
+**Note:** the property **owner.sync.policy** can take any of the two following values: 
 
 + **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the lead and it'll just move the lead over.
-+ **syncOwner**: it will try to create the lead's owner should this be not present in the Salesforce instance B.
++ **syncOwner**: it will try to create the lead's owner if there is no occurence in the Salesforce instance B.
 
 
 #### SalesForce Connector configuration for company A

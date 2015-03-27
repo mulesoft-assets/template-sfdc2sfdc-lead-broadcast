@@ -59,7 +59,7 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 
 		helper = new BatchTestHelper(muleContext);
 
-		// Flow to retrieve accounts from target system after syncing
+		// Flow to retrieve leads from target system after syncing
 		retrieveLeadFromBFlow = getSubFlow("retrieveLeadFlow");
 		retrieveLeadFromBFlow.initialise();
 
@@ -67,15 +67,15 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 		createLeadInBFlow = getSubFlow("createLeadFlowB");
 		createLeadInBFlow.initialise();
 
-		// Create accounts in source system to be or not to be synced
+		// Create leads in source system to be or not to be synced
 		createLeadInAFlow = getSubFlow("createLeadFlowA");
 		createLeadInAFlow.initialise();
 
-		// Delete the created accounts in A
+		// Delete the created leads in A
 		deleteLeadFromAflow = getSubFlow("deleteLeadFromAFlow");
 		deleteLeadFromAflow.initialise();
 
-		// Delete the created accounts in B
+		// Delete the created leads in B
 		deleteLeadFromBflow = getSubFlow("deleteLeadFromBFlow");
 		deleteLeadFromBflow.initialise();
 
@@ -101,12 +101,12 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 
 		// Assert first object was sync to target system
 		Map<String, Object> payload = invokeRetrieveFlow(retrieveLeadFromBFlow, createdLeadsInA.get(0));
-		assertEquals("The account should have been sync", createdLeadsInA.get(0).get("Email"), payload.get("Email"));
+		assertEquals("The lead should have been sync", createdLeadsInA.get(0).get("Email"), payload.get("Email"));
 
 		// Assert fourth object was sync to target system
 		Map<String, Object> secondLead = createdLeadsInA.get(1);
 		payload = invokeRetrieveFlow(retrieveLeadFromBFlow, secondLead);
-		assertEquals("The account should have been sync (Email)", secondLead.get("Email"), payload.get("Email"));
+		assertEquals("The lead should have been sync (Email)", secondLead.get("Email"), payload.get("Email"));
 	}
 
 	private void registerListeners() throws NotificationException {
@@ -130,8 +130,8 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 		final List<SaveResult> results = (List<SaveResult>) event.getMessage().getPayload();
 		int i = 0;
 		for (SaveResult result : results) {
-			Map<String, Object> accountInA = createdLeadsInA.get(i);
-			accountInA.put("Id", result.getId());
+			Map<String, Object> leadInA = createdLeadsInA.get(i);
+			leadInA.put("Id", result.getId());
 			i++;
 		}
 	}
@@ -147,9 +147,9 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 
 		idList.clear();
 		for (final Map<String, Object> createdLead : leads) {
-			final Map<String, Object> account = invokeRetrieveFlow(retrieveLeadFromBFlow, createdLead);
-			if (account != null) {
-				idList.add(account.get("Id"));
+			final Map<String, Object> lead = invokeRetrieveFlow(retrieveLeadFromBFlow, createdLead);
+			if (lead != null) {
+				idList.add(lead.get("Id"));
 			}
 		}
 		deleteLeadFromBflow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
