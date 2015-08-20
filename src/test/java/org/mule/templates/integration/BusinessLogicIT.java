@@ -51,6 +51,8 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 
 		// Set the poll starting delay to 20 seconds
 		System.setProperty("polling.startDelayMillis", "20000");
+		System.setProperty("watermark.default.expression", "#[groovy: new Date(System.currentTimeMillis() - 10000).format(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", TimeZone.getTimeZone('UTC'))]");
+		System.setProperty("page.size", "200");
 	}
 	@Before
 	public void setUp() throws Exception {

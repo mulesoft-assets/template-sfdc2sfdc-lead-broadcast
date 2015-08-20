@@ -1,35 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
 xmlns="http://www.mulesoft.org/schema/mule/core" 
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:spring="http://www.springframework.org/schema/beans" 
 xmlns:json="http://www.mulesoft.org/schema/mule/json"
-version="EE-3.6.1" 
+version="EE-3.7.1" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
-http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
     <batch:job name="broadcastLeadBatch">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:process-records>
-            <batch:step name="foreachLeadInAGetLeadBStep">
-            	<enricher source="#[payload]" target="#[recordVars['idInB']]" doc:name="store payload in variable idInB">
+            <batch:step name="GetLeadInBStep">
+            	<enricher source="#[payload != null ? payload.Id : null]" target="#[payload.Id]" doc:name="store id from instance B in payload">
         			<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Lead WHERE Email = '#[payload['Email']]'" doc:name="query Lead from Salesforce Instance B"/>
         		</enricher>
             </batch:step>
-             <batch:step name="findOrCreateOwnerInBSetp" accept-expression="'syncOwner' == '${owner.sync.policy}'">
-                <choice doc:name="Choice">
+             <batch:step name="FindOrCreateOwnerInBStep" accept-expression="'syncOwner' == '${owner.sync.policy}'">
+                <choice doc:name="Does owner in A exist?">
                 	<when expression="#[payload['Owner'] != null]">
-                <enricher source="#[payload]" target="#[flowVars['ownerInB']]" doc:name="store result in ownerInB">
+                <enricher source="#[payload]" target="#[recordVars.ownerInB]" doc:name="store result in ownerInB">
                     <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Username FROM User WHERE Email = '#[payload['Owner']['Email']]'" doc:name="query Owner in Salesforce Instance B"/>
                 </enricher>
-                <choice doc:name="Choice">
-                    <when expression="#[flowVars['ownerInB'] is NullPayload]">
-		                <enricher source="#[payload]" target="#[flowVars['ownerInA']]" doc:name="store result in ownerInA">
+                <choice doc:name="Does owner need to be created?">
+                    <when expression="#[recordVars.ownerInB == null]">
+		                <enricher  target="#[recordVars.ownerInA]" doc:name="store result in payload">
 		                    <sfdc:retrieve type="User"  config-ref="SalesforceA" doc:name="query origin Owner in Salesforce A to get all required field.">
 								<sfdc:ids>
 								    <sfdc:id>#[payload['Owner']['Id']]</sfdc:id>
@@ -46,44 +47,53 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 								</sfdc:fields>
 		                    </sfdc:retrieve>
 		                </enricher>
-                        <enricher doc:name="store result in idOfOwnerInB" target="#[recordVars['idOfOwnerInB']]">
+                        <enricher doc:name="enrich payload with new OwnerId" target="#[payload.OwnerId]" source="#[payload[0].getId()]">
 	                        <processor-chain doc:name="Processor Chain">
-                                <expression-component doc:name="remove unnecessary fields"><![CDATA[flowVars['ownerInA'].get(0).remove('Id');]]></expression-component>
-                                <expression-component doc:name="assign ProfileId to the User"><![CDATA[flowVars['ownerInA'].get(0).put('ProfileId', '${sfdc.b.user.profile.id}');
-flowVars['ownerInA'].get(0).put('Username',  flowVars['ownerInA'].get(0).get('Username') + '.target' + server.nanoTime());]]></expression-component>
-                                <set-payload value="#[ [flowVars['ownerInA'].get(0)]]" doc:name="set to the owner queried from the Instance A in var 'ownerInA'"/>
+                                        <dw:transform-message doc:name="prepare for a create Owner">
+                                            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+
+---
+recordVars.ownerInA map {
+	($ - 'Id'),
+	ProfileId : p('sfdc.b.user.profile.id'),
+	Username : $.Username + '.target' + math.random
+}
+]]></dw:set-payload>
+                                        </dw:transform-message>
+
        		                     <sfdc:create config-ref="SalesforceB" type="User" doc:name="create Owner in Salesforce Instance B">
        	    	                     <sfdc:objects ref="#[payload]"/>
        	        	             </sfdc:create>
-                                <expression-transformer expression="#[payload[0].getId()]" doc:name="get new Owner id"/>
+
 	                        </processor-chain>
                         </enricher>
                     </when>
                     <otherwise>
-                        <enricher target="#[recordVars['idOfOwnerInB']]" doc:name="store result in idOfOwnerInB">
-     	                   <expression-transformer expression="#[flowVars['ownerInB']['Id']]" doc:name="get new owner id"/>
+                        <enricher target="#[payload.OwnerId]" doc:name="enrich payload with existing OwnerId">
+     	                   <expression-transformer expression="#[recordVars.ownerInB.Id]" doc:name="get existing owner id"/>
                         </enricher>
                     </otherwise>
                 </choice>
-                <expression-component doc:name="set Owner ID"><![CDATA[payload.put('OwnerId', recordVars['idOfOwnerInB']);]]></expression-component>
+
                 	</when>
                     <otherwise>
                         <logger level="INFO" doc:name="Logger" message="There is no Owner assigned to this Lead. Doing nothing"/>
                     </otherwise>
                 </choice>
             </batch:step>
-            <batch:step name="foreachLeadInAUpsertLeadInBStep"> 
-            	<expression-component doc:name="set Id for upsert"><![CDATA[if (recordVars['idInB'] instanceof NullPayload) {
-		         		payload.remove('Id') 
-		      		} else { 
-		        			payload.put('Id',recordVars['idInB'].get('Id'))}]]> 
-	  			</expression-component>
-	            <expression-component doc:name="remove LastModifiedDate for upsert"><![CDATA[payload.remove('Owner');
-payload.remove('LastModifiedDate');
-payload.remove('type');
-	  			]]></expression-component>
-                <batch:commit size="200" doc:name="Batch Commit" >
+            <batch:step name="UpsertLeadInBStep">
+
+                <batch:commit size="${page.size}" doc:name="Batch Commit" >
                 	<logger message="Lead to update/create: #[payload]"	level="INFO" doc:name="log 'Lead objects to update/create'" />
+                    <dw:transform-message doc:name="prepare for upsert Leads">
+                        <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map {
+	($ - 'type' - 'Owner' - 'LastModifiedDate')
+}]]></dw:set-payload>
+                    </dw:transform-message>
            	        <sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="Lead" doc:name="upsert Leads in Salesforce Instance B">
             			<sfdc:objects ref="#[payload]"/>
         			</sfdc:upsert>

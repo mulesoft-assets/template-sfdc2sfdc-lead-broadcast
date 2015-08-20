@@ -25,9 +25,9 @@ Note that using this template is subject to the conditions of this [License Agre
 Please review the terms of the license before downloading and using this template. In short, you are allowed to use the template for free with Mule ESB Enterprise Edition, CloudHub, or as a trial in Anypoint Studio.
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to synchronize Leads between two Salesfoce orgs.
+As a Salesforce admin I want to synchronize Leads between two Salesforce orgs.
 
-This Anypoint Template should serve as a foundation for setting an online sync of Lead from one SalesForce instance to another. Everytime there is a new Lead or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the Lead on the target org.
+This Anypoint Template should serve as a foundation for setting an online sync of Leads from one SalesForce instance to another. Every time there is a new Lead or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the Lead on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
@@ -149,6 +149,8 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + polling.frequency `60000`
 + poll.startDelayMillis `0`
 + watermark.defaultExpression `YESTERDAY`
++ page.size `200`
+
 + owner.sync.policy `syncOwner`
 
 **Note:** the property **owner.sync.policy** can take any of the two following values: 
@@ -161,13 +163,15 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sfdc.a.username `bob.dylan@orga`
 + sfdc.a.password `DylanPassword123`
 + sfdc.a.securityToken `avsfwCUl7apQs56Xq2AKi3X`
-+ sfdc.a.url `https://login.salesforce.com/services/Soap/u/26.0`
++ sfdc.a.url `https://login.salesforce.com/services/Soap/u/32.0`
 
 #### SalesForce Connector configuration for company B
 + sfdc.b.username `joan.baez@orgb`
 + sfdc.b.password `JoanBaez456`
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
-+ sfdc.b.url `https://login.salesforce.com/services/Soap/u/26.0`
++ sfdc.b.url `https://login.salesforce.com/services/Soap/u/32.0`
+ 
++ sfdc.b.user.profile.id `00a21000001UzDr`
 
 # API Calls <a name="apicalls"/>
 Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint template calls to the API can be calculated using the formula:
