@@ -3,40 +3,40 @@
 <mule xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
 	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.1"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
 
-	<sub-flow name="createLeadFlowA" doc:name="createLeadFlowA">
+	<sub-flow name="createLeadFlowA" >
 		<sfdc:create config-ref="SalesforceA" type="Lead"
 			doc:name="Salesforce">
 			<sfdc:objects ref="#[payload]" />
 		</sfdc:create>
 		<logger level="INFO" message="Create Leads in A result: #[payload]" doc:name="Logger"/>
 	</sub-flow>
-	<sub-flow name="createLeadFlowB" doc:name="createLeadFlowB">
+	<sub-flow name="createLeadFlowB" >
 		<sfdc:create config-ref="SalesforceB" type="Lead"
 			doc:name="Salesforce">
 			<sfdc:objects ref="#[payload]" />
 		</sfdc:create>
 		<logger level="INFO" message="Create Leads in B result: #[payload]" doc:name="Logger"/>
 	</sub-flow>
-	<sub-flow name="retrieveLeadFlow" doc:name="retrieveLeadFlow">
+	<sub-flow name="retrieveLeadFlow" >
 		<sfdc:query-single config-ref="SalesforceB"
-			query="SELECT Email, FirstName, LastName, Country, Company, Id, LastModifiedDate, Owner.Id, Owner.Name, Owner.Type FROM Lead WHERE Email = '#[payload['Email']]'"
+			query="SELECT Email, FirstName, LastName, Country, Company, Id, LastModifiedDate, Owner.Id, Owner.Name FROM Lead WHERE Email = '#[payload['Email']]'"
 			doc:name="Salesforce" />
 		<logger level="INFO" message="Retrieve Leads result: #[payload]" doc:name="Logger"/>
 	</sub-flow>
-	<sub-flow name="deleteLeadFromAFlow" doc:name="deleteLeadFromAFlow">
+	<sub-flow name="deleteLeadFromAFlow" >
 		<sfdc:delete config-ref="SalesforceA" doc:name="Salesforce">
 			<sfdc:ids ref="#[payload]" />
 		</sfdc:delete>
 		<logger level="INFO" message="Remove Leads from A result: #[payload]" doc:name="Logger"/>
 	</sub-flow>
-	<sub-flow name="deleteLeadFromBFlow" doc:name="deleteLeadFromBFlow">
+	<sub-flow name="deleteLeadFromBFlow" >
 		<sfdc:delete config-ref="SalesforceB" doc:name="Salesforce">
 			<sfdc:ids ref="#[payload]" />
 		</sfdc:delete>
