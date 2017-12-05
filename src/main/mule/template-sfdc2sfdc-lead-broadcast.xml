@@ -26,10 +26,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 	</salesforce:sfdc-config>
 	<configuration-properties file="common.properties"
 		doc:name="Configuration properties" doc:id="523e4eea-d00f-4213-bde7-a2764a635851" />
-	<configuration-properties file="mule.dev.properties" doc:name="Configuration properties" doc:id="7115a17b-4a67-4607-8a7c-e8f91b0737de" />
-	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4b7df0c7-b328-48d9-a039-b56957e8d891" >
-		<http:listener-connection host="0.0.0.0" port="8081" />
-	</http:listener-config>
+	<configuration-properties file="mule.${mule.env}.properties" doc:name="Configuration properties" doc:id="7115a17b-4a67-4607-8a7c-e8f91b0737de" />
 	<flow name="watermark">
 		<scheduler doc:name="Scheduler" doc:id="2ca05425-15ae-4fdc-a08d-71660c96a208">
 			<scheduling-strategy>
