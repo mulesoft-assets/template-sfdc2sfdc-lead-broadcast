@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	
+	<os:object-store name="watermarkStore" persistent="true"/>
+	
+	<salesforce:sfdc-config name="Salesforce_Sfdc_A_config"
+		doc:name="Salesforce Sfdc config" doc:id="38a0808d-8f32-4c87-a763-4db431b3c4cd">
+		<salesforce:basic-connection username="${sfdc.a.username}"
+			password="${sfdc.a.password}" securityToken="${sfdc.a.securityToken}" />
+	</salesforce:sfdc-config>
+	<salesforce:sfdc-config name="Salesforce_Sfdc_B_config"
+		doc:name="Salesforce Sfdc config" doc:id="3d4eabb0-83f2-4e02-97e1-77c5417347f7">
+		<salesforce:basic-connection username="${sfdc.b.username}"
+			password="${sfdc.b.password}" securityToken="${sfdc.b.securityToken}" />
+	</salesforce:sfdc-config>
+	<configuration-properties file="common.properties"
+		doc:name="Configuration properties" doc:id="523e4eea-d00f-4213-bde7-a2764a635851" />
+	<configuration-properties file="mule.dev.properties" doc:name="Configuration properties" doc:id="7115a17b-4a67-4607-8a7c-e8f91b0737de" />
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4b7df0c7-b328-48d9-a039-b56957e8d891" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="watermark">
+		<scheduler doc:name="Scheduler" doc:id="2ca05425-15ae-4fdc-a08d-71660c96a208">
+			<scheduling-strategy>
+				<fixed-frequency frequency="${polling.frequency}" startDelay="${polling.startDelay}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<os:retrieve key="watermark" objectStore="watermarkStore" target="lastQueryTimestamp" doc:name="Retrieve lastQueryTimestamp">
+        <os:default-value><![CDATA[${watermark.default.expression}]]></os:default-value>
+    </os:retrieve>
+    <salesforce:query config-ref="Salesforce_Sfdc_A_config" doc:name="Query Leads with filtering criteria from Salesforce Instance A">
+		<salesforce:salesforce-query>Select Email, FirstName, LastName, Country, Company, Id, LastModifiedDate, Owner.Id, Owner.Username, Owner.Email FROM Lead WHERE LastModifiedDate &gt; :lastModifiedDate AND Email != null</salesforce:salesforce-query>
+		<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"lastModifiedDate" : vars.lastQueryTimestamp
+}]]]></salesforce:parameters>
+    
+</salesforce:query>
+    <os:store key="watermark" failIfPresent="false" failOnNullValue="false" objectStore="watermarkStore" doc:name="Store lastQueryTimestamp">
+        <os:value>#[max(payload map $.LastModifiedDate)]</os:value>
+    </os:store>
+		<flow-ref name="businessLogicFlow" doc:name="businessLogicFlow" />
+</flow>
+	<flow name="businessLogicFlow" doc:id="8759532e-79b7-4789-990c-dc8e162bfd67" >
+		<batch:job jobName="broadcastLeadBatch" doc:id="204892ae-0d97-4326-beae-310c8d52b7a6" blockSize="${page.size}">
+			<batch:process-records>
+				<batch:step name="GetLeadInBStep" doc:id="b277c4d3-8ec1-4941-96be-e6fb9a8e2d9f" >
+					<salesforce:query-single config-ref="Salesforce_Sfdc_B_config" doc:name="Query Lead from Salesforce Instance B" doc:id="e828fbe5-8917-4833-a479-8df69b560884" target="IdInB">
+						<salesforce:salesforce-query>SELECT Id FROM Lead WHERE Email = ':email'</salesforce:salesforce-query>
+						<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"email" : payload.Email
+}]]]></salesforce:parameters>
+					</salesforce:query-single>
+					<ee:transform doc:name="Enrich Payload with IdInB" doc:id="c119f87d-9095-4962-b961-efe507b06a0c">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ vars.IdInB]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</batch:step>
+				<batch:step name="FindOrCreateOwnerInBStep" doc:id="89713774-362a-4e92-9bdc-41e31802bf38" acceptExpression="#['syncOwner' == '${owner.sync.policy}']">
+					<choice doc:name="Is owner set in A?" doc:id="c9e31f66-c1da-4351-b0f1-ea1e99c6eeaf" >
+						<when expression="payload.Owner != null" >
+							<salesforce:query-single doc:name="Query Owner in Salesforce Instance B" doc:id="0f546a41-65be-483a-8e43-eb7d0cf48980" config-ref="Salesforce_Sfdc_B_config" target="ownerInB">
+								<salesforce:salesforce-query >SELECT Id, Username FROM User WHERE Email = ':ownersEmail'</salesforce:salesforce-query>
+								<salesforce:parameters ><![CDATA[#[output applicaton/java
+---
+{
+	"ownersEmail" : payload.Owner.Email
+}]]]></salesforce:parameters>
+							</salesforce:query-single>
+							<logger level="INFO" doc:name="Logger" doc:id="dbbe112f-3d95-4fc6-9f84-4e764b786cdb" message="#[vars.ownerInB]" />
+							<choice doc:name="Does owner need to be created?" doc:id="d2ecfa6c-a003-48c1-b4dc-02b75e00226f" >
+								<when expression="vars.ownerInB != null" >
+									<salesforce:retrieve type="User" doc:name="Query origin Owner in Salesforce A to get all required field." doc:id="26068e25-b71e-4358-9ea1-7ee58e1c61ff" config-ref="Salesforce_Sfdc_A_config" target="ownerInA">
+										<salesforce:retrieve-request ><![CDATA[#[{
+	Ids: [payload.Owner.Id],
+	Fields: ['Email','LastName','Alias','Username','LanguageLocaleKey','TimeZoneSidKey','LocaleSidKey','EmailEncodingKey']
+}]]]></salesforce:retrieve-request>
+									</salesforce:retrieve>
+									<ee:transform doc:name="Prepare data for new owner" doc:id="e344bc0f-ee19-4f71-8f3d-74b936ffa2ce">
+										<ee:message>
+											<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+---
+vars.ownerInA map {
+	($ - 'Id'),
+	ProfileId : p('sfdc.b.user.profile.id'),
+	Username : $.Username ++ '.target' ++ randomInt(10000000)
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+									<salesforce:create type="User" doc:name="Create Owner in Salesforce Instance B" doc:id="8a47cb94-0020-41cb-9c07-be0871728cc3" config-ref="Salesforce_Sfdc_B_config" target="newOwnerInB"/>
+									<ee:transform doc:name="Enrich Payload with Owner ID" doc:id="c119f87d-9095-4962-b961-efe507b06a0c">
+										<ee:message>
+											<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload ++
+{
+	OwnerId: vars.newOwnerInB.Id
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</when>
+								<otherwise >
+									<ee:transform doc:name="Enrich Payload with Owner ID" doc:id="c119f87d-9095-4962-b961-efe507b06a0c">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ 
+{
+	OwnerId: vars.ownerInB.Id
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+								</otherwise>
+							</choice>
+						</when>
+						<otherwise >
+							<logger level="INFO" doc:name="Logger" doc:id="01dd3c04-d0b5-48a3-8db6-940cda87cdca" message="There is no Owner assigned to this Lead."/>
+						</otherwise>
+					</choice>
+
+				</batch:step>
+				<batch:step name="UpsertLeadInBStep" doc:id="78a74ab4-9b91-416d-985a-acda2ac377eb">
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="1ad86a98-643e-494a-a90a-32daab0b03cc" size="${page.size}">
+						<logger level="INFO" doc:name="Log Lead objects to update/create" doc:id="d940f154-2b53-4df1-9962-306ffe8883f7" message="#['Lead to update/create: ' ++ write(payload, 'application/json', {'indent': 'false'})]"/>
+						<ee:transform doc:name="Prepare for upsert Leads" doc:id="d484063f-6d81-42ce-98ef-7cec51b04672">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload map {
+	($ - 'type' - 'Owner' - 'LastModifiedDate')
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<salesforce:upsert-bulk config-ref="Salesforce_Sfdc_B_config" type="Lead" externalIdFieldName="Id" doc:name="Upsert Leads in Salesforce Instance B" doc:id="26dee78b-3cbd-41d7-a260-538058420b0e" />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete>
+				<ee:transform doc:name="Prepare migration result" doc:id="c84b4bc4-5a65-41c1-9d0c-f1ebd3d8db7a">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+"Migration Report: \n"
+ 
+++ "\n Time [milliseconds]: " 		++ payload.elapsedTimeInMillis
+++ "\n Total Records: "				++ payload.totalRecords
+++ "\n Successful Records: "		++ payload.successfulRecords
+++ "\n Failed Records: "			++ payload.failedRecords
+++ "\n Loaded Records: "			++ payload.loadedRecords
+++ "\n Processed Records: " 		++ payload.processedRecords]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+				<logger level="INFO" doc:name="Migration process has finished!" doc:id="b7575d38-7dbd-4602-9186-1bbb25234896" message="#[payload]" />
+
+			</batch:on-complete>
+		
+</batch:job>
+	</flow>
+</mule>
