@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" 
+xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	
+	<os:object-store name="watermarkStore" persistent="false" doc:name="Object store"/>
+	
+	<salesforce:sfdc-config name="Salesforce_Sfdc_A_config"
+		doc:name="Salesforce Sfdc config" doc:id="38a0808d-8f32-4c87-a763-4db431b3c4cd">
+		<salesforce:basic-connection username="${sfdc.a.username}"
+			password="${sfdc.a.password}" securityToken="${sfdc.a.securityToken}" />
+	</salesforce:sfdc-config>
+	
+	<salesforce:sfdc-config name="Salesforce_Sfdc_B_config"
+		doc:name="Salesforce Sfdc config" doc:id="3d4eabb0-83f2-4e02-97e1-77c5417347f7">
+		<salesforce:basic-connection username="${sfdc.b.username}"
+			password="${sfdc.b.password}" securityToken="${sfdc.b.securityToken}" />
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="2972f386-5a9e-4428-9fb2-4eda3d092878" file="common.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="7d0bc7ed-bef0-4691-adcd-b8dd1f951a4d" file="mule.${mule.env}.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="93c74475-3642-4d7f-ad09-13e7aae1e213" file="mule-artifact.properties" />
+	
+	
+</mule>
