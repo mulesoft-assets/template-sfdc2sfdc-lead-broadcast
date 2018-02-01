@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule  xmlns:os="http://www.mulesoft.org/schema/mule/os" 
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+
+<flow name="triggerFlow">
+		<scheduler doc:name="Scheduler" doc:id="2ca05425-15ae-4fdc-a08d-71660c96a208">
+			<scheduling-strategy>
+				<fixed-frequency frequency="${polling.frequency}" startDelay="${polling.startDelay}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<flow-ref doc:name="watermarkFlow" doc:id="e77e16d5-9895-4a13-af87-d6b6f4841bb6" name="watermarkFlow"/>
+		<flow-ref name="mainFlow" doc:name="mainFlow" />
+</flow>
+<flow name="watermarkFlow">
+		<os:retrieve key="watermark" objectStore="watermarkStore" target="lastQueryTimestamp" doc:name="Retrieve lastQueryTimestamp">
+        <os:default-value><![CDATA[${watermark.default.expression}]]></os:default-value>
+    </os:retrieve>
+    <salesforce:query config-ref="Salesforce_Sfdc_A_config" doc:name="Query Leads with filtering criteria from Salesforce Instance A">
+		<salesforce:salesforce-query>SELECT Email, FirstName, LastName, Country, Company, Id, LastModifiedDate, Owner.Id, Owner.Username, Owner.Email FROM Lead WHERE LastModifiedDate &gt; :lastModifiedDate AND Email != null</salesforce:salesforce-query>
+		<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"lastModifiedDate" : vars.lastQueryTimestamp
+}]]]></salesforce:parameters>
+    
+</salesforce:query>
+    <os:store key="watermark" failIfPresent="false" failOnNullValue="false" objectStore="watermarkStore" doc:name="Store lastQueryTimestamp">
+        <os:value>#[max(payload map $.LastModifiedDate)]</os:value>
+    </os:store>
+</flow>
+
+</mule>
