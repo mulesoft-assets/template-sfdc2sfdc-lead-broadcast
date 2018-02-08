@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	
+	<parent>
+	    <groupId>org.mule.templates</groupId>
+	    <artifactId>templates-tooling-parent-pom</artifactId>
+	    <version>2.1.0-SNAPSHOT</version>
+	</parent>
+	
+	
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>org.mule.templates</groupId>
 	<artifactId>template-sfdc2sfdc-lead-broadcast</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
     <packaging>mule-application</packaging>
-
 	<name>template-sfdc2sfdc-lead-broadcast</name>
 
     <properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<app.runtime>4.0.0</app.runtime>
-		<mule.maven.plugin.version>3.0.0</mule.maven.plugin.version>
-		<mule.connectors.version>1.0.0</mule.connectors.version>
 		<sfdc.connector.version>9.0.0</sfdc.connector.version>
 	</properties>
-
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -31,33 +30,22 @@
 			</plugin>
 		</plugins>
 	</build>
-
+	
 	<dependencies>
-		<dependency>
-			<groupId>org.mule.connectors</groupId>
-			<artifactId>mule-http-connector</artifactId>
-			<version>${mule.connectors.version}</version>
-			<classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.connectors</groupId>
-			<artifactId>mule-sockets-connector</artifactId>
-			<version>${mule.connectors.version}</version>
-			<classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
-            <groupId>org.mule.connectors</groupId>
-            <artifactId>mule-objectstore-connector</artifactId>
-            <version>${mule.connectors.version}</version>
-            <classifier>mule-plugin</classifier>
-        </dependency>
     	<dependency>
             <groupId>org.mule.connectors</groupId>
             <artifactId>mule-sfdc-connector</artifactId>
             <version>${sfdc.connector.version}</version>
             <classifier>mule-plugin</classifier>
         </dependency>
+    	<dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-objectstore-connector</artifactId>
+            <version>${mule.connectors.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
     </dependencies>
+
 
 	<repositories>
           <repository>
