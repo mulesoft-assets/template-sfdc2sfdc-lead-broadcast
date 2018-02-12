@@ -27,12 +27,12 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 As a Salesforce admin I want to synchronize Leads between two Salesforce orgs.
 
-This Anypoint Template should serve as a foundation for setting an online sync of Leads from one SalesForce instance to another. Every time there is a new Lead or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the Lead on the target org.
+This Anypoint Template should serve as a foundation for setting an online sync of Leads from one SalesForce instance to another. Every time there is new Lead or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the Lead on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
-As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
-The batch job is divided in Input, Process and On Complete stages.
+As implemented, this Anypoint Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided in Process and On Complete stages.
 During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing Leads that match the filter criteria.
 During the Process stage, each SalesForce Lead will be filtered depending on, if it has an existing matching Lead in the SalesForce Org B.
 The last step of the Process stage will group the Leads and create/update them in SalesForce Org B.
@@ -205,9 +205,9 @@ In the visual editor they can be found on the *Global Element* tab.
 
 
 ## businessLogic.xml<a name="businesslogicxml"/>
-Functional aspect of the Anypoint Template is implemented on this XML, directed by a batch job that will be responsible for creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Anypoint Template:
+Functional aspect of the Anypoint Template is implemented on this XML, directed by a batch job that will be responsible for creations/updates. The several message processors constitute four high level actions that fully implement the logic of this Anypoint Template:
 
-1. Job execution is invoked from triggerFlow (endpoints.xml) everytime there is a new query executed asking for created/updated Leads.
+1. Job execution is invoked from triggerFlow (endpoints.xml) everytime there is new query executed asking for created/updated Leads.
 2. During the Process stage, each SalesForce Lead will be filtered depending on, if it has an existing matching Lead in the SalesForce Org B.
 3. The last step of the Process stage will group the Leads and create/update them in SalesForce Org B.
 4. Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
