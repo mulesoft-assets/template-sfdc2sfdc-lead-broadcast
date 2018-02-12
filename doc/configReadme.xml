@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<configuration>
+	<placeholders>
+		<placeholder id="template_name">Salesforce to Salesforce Lead Broadcast</placeholder>
+	</placeholders>
+	<sections>
+		<section id="use_case">
+As a Salesforce admin I want to synchronize Leads between two Salesforce orgs.
+
+This Anypoint Template should serve as a foundation for setting an online sync of Leads from one SalesForce instance to another. Every time there is new Lead or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the Lead on the target org.
+
+Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
+
+As implemented, this Anypoint Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided in Process and On Complete stages.
+During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing Leads that match the filter criteria.
+During the Process stage, each SalesForce Lead will be filtered depending on, if it has an existing matching Lead in the SalesForce Org B.
+The last step of the Process stage will group the Leads and create/update them in SalesForce Org B.
+Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
+		</section>
+		<section id="considerations">
+<![CDATA[
+To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
+]]>
+		</section>
+		<section id="run_it">
+<![CDATA[
+See below.
+]]>
+		</section>
+		<section id="default_running_on_premise">
+<![CDATA[
+Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
+
+Once your app is all set and started, there is no need to do anything else. The application will poll SalesForce to know if there are any newly created or updated objects and synchronice them.
+]]>
+		</section>
+		<section id="running_on_cloudhub">
+<![CDATA[
+Once your app is all set and started, there is no need to do anything else. Every time a Lead is created or modified, it will be automatically synchronised to SalesForce Org B as long as it has an Email.
+]]>
+		</section>
+		<section id="application_configuration">
+		<![CDATA[
+**Application configuration**
+
++ scheduler.frequency `60000`
++ scheduler.startDelay `0`
++ watermark.defaultExpression `YESTERDAY`
++ page.size `200`
++ owner.sync.policy `syncOwner`
+
+**Note:** the property **owner.sync.policy** can take any of the two following values: 
+
++ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the lead and it'll just move the lead over.
++ **syncOwner**: it will try to create the lead's owner if there is no occurence in the Salesforce instance B.
+
+
+#### SalesForce Connector configuration for company A
++ sfdc.a.username `bob.dylan@orga`
++ sfdc.a.password `DylanPassword123`
++ sfdc.a.securityToken `avsfwCUl7apQs56Xq2AKi3X`
+
+#### SalesForce Connector configuration for company B
++ sfdc.b.username `joan.baez@orgb`
++ sfdc.b.password `JoanBaez456`
++ sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
+ 
++ sfdc.b.user.profile.id `00a21000001UzDr`
+]]>
+		</section>
+		<section id="api_calls">
+		<![CDATA[
+Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint template calls to the API can be calculated using the formula:
+
+***1 + X + X / 200***
+
+Being ***X*** the number of Leads to be synchronized on each run. 
+
+The division by ***200*** is because, by default, Leads are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+
+For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
+]]>
+		</section>
+		<section id="default_business_logic_xml">
+		<![CDATA[
+Functional aspect of the Anypoint Template is implemented on this XML, directed by a batch job that will be responsible for creations/updates. The several message processors constitute four high level actions that fully implement the logic of this Anypoint Template:
+
+1. Job execution is invoked from triggerFlow (endpoints.xml) everytime there is new query executed asking for created/updated Leads.
+2. During the Process stage, each SalesForce Lead will be filtered depending on, if it has an existing matching Lead in the SalesForce Org B.
+3. The last step of the Process stage will group the Leads and create/update them in SalesForce Org B.
+4. Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
+]]>
+		</section>
+		<section id="default_endpoints_xml">
+		<![CDATA[
+This file is conformed by two Flows.
+
+The first one we'll call it **trigger** flow. This one contains the Scheduler endpoint that will periodically trigger **watermark** flow and then executing the batch job process.
+
+The second one we'll call it **watermark** flow. This one contains watermarking logic that will be querying Salasforce for updated/created Leads that meet the defined criteria in the query since the last polling. The last invocation timestamp is stored by using Objectstore Component and updated after each Salasforce query.
+
+]]>
+		</section>
+	</sections>
+</configuration>

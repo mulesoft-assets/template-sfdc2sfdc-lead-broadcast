@@ -12,7 +12,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 <flow name="triggerFlow">
 		<scheduler doc:name="Scheduler" doc:id="2ca05425-15ae-4fdc-a08d-71660c96a208">
 			<scheduling-strategy>
-				<fixed-frequency frequency="${polling.frequency}" startDelay="${polling.startDelay}"/>
+				<fixed-frequency frequency="${scheduler.frequency}" startDelay="${scheduler.startDelay}"/>
 			</scheduling-strategy>
 		</scheduler>
 		<flow-ref doc:name="watermarkFlow" doc:id="e77e16d5-9895-4a13-af87-d6b6f4841bb6" name="watermarkFlow"/>
