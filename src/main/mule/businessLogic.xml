@@ -30,7 +30,10 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 							<ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
-payload ++ vars.IdInB]]></ee:set-payload>
+payload - "Id" ++{
+	(Id: vars.IdInB.Id) if vars.IdInB.Id != null
+}
+]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
 				</batch:step>

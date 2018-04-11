@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 </flow>
 <flow name="watermarkFlow">
 		<os:retrieve key="watermark" objectStore="watermarkStore" target="lastQueryTimestamp" doc:name="Retrieve lastQueryTimestamp">
-        <os:default-value><![CDATA[${watermark.default.expression}]]></os:default-value>
+        <os:default-value><![CDATA[#[${watermark.default.expression}]]]></os:default-value>
     </os:retrieve>
     <salesforce:query config-ref="Salesforce_Sfdc_A_config" doc:name="Query Leads with filtering criteria from Salesforce Instance A">
 		<salesforce:salesforce-query>SELECT Email, FirstName, LastName, Country, Company, Id, LastModifiedDate, Owner.Id, Owner.Username, Owner.Email FROM Lead WHERE LastModifiedDate &gt; :lastModifiedDate AND Email != null</salesforce:salesforce-query>
@@ -31,8 +31,8 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 }]]]></salesforce:parameters>
     
 </salesforce:query>
-    <os:store key="watermark" failIfPresent="false" failOnNullValue="false" objectStore="watermarkStore" doc:name="Store lastQueryTimestamp">
-        <os:value>#[max(payload map $.LastModifiedDate)]</os:value>
+    <os:store key="watermark" failOnNullValue="false" objectStore="watermarkStore" doc:name="Store lastQueryTimestamp">
+        <os:value><![CDATA[#[max(payload map $.LastModifiedDate) as String]]]></os:value>
     </os:store>
 </flow>
 
