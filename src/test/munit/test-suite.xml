@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<munit:config name="test-suite.xml" doc:name="MUnit configuration" />
+
+	<configuration-properties doc:name="Configuration properties" doc:id="9b9106b6-d777-4f3c-8999-9a2f41365d78" file="mule.${mule.env}.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="623d9f2d-586b-4059-99f3-d3536b123101" file="common.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="d21ca8b5-ccfe-4a34-b750-26881b4274f7" file="mule-artifact.properties" />
+
+	<munit:before-test name="test-suitBefore_Test" description="Before tests actions" doc:id="175afc70-0474-4bb0-90a8-20029cf4ea1d">
+		<ee:transform doc:name="Prepare testing data for instance A" doc:id="7c253cc1-4a09-4e71-a9c5-74e5dbbf5848">
+			<ee:message>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="leads" ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	"Company"  : "MUnit",
+	"Email"    : randomInt(100000) ++ "lead@test.com",
+	"FirstName": "TestName1",
+	"Country"  : "USA",
+	"LastName" : "LastName1"
+},
+{
+	"Company"  : "MUnit",
+	"Email"    : randomInt(100000) ++ "lead@test.com",
+	"FirstName": "TestName2",
+	"Country"  : "USA",
+	"LastName" : "LastName2"
+}
+]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce:create doc:id="8b0cbb2b-6715-42c9-83ce-6fbb32928599" doc:name="Create Leads in instance A" config-ref="Salesforce_Sfdc_A_config"
+			type="Lead">
+			<salesforce:records ><![CDATA[#[vars.leads]]]></salesforce:records>
+		</salesforce:create>
+		<ee:transform doc:name="Set IDs to variable sfdcAIds and Prepare testing data for instance B" doc:id="7c253cc1-4a09-4e71-a9c5-74e5dbbf5848">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	"Company"  : "MUnit",
+	"Email"    : vars.leads[1].Email,
+	"FirstName": "TestName2",
+	"Country"  : "UK",
+	"LastName" : "LastName2"
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sfdcAIds" ><![CDATA[%dw 2.0
+output application/java
+---
+payload map ($.Id)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce:create doc:id="8b0cbb2b-6715-42c9-83ce-6fbb32928599" doc:name="Create Lead in instance B" config-ref="Salesforce_Sfdc_B_config"
+			type="Lead" />
+		<set-variable value="#[payload map ($.Id)]" doc:name="Set IDs to variable sfdcBIds" doc:id="6bd73591-80ee-469f-a71e-380da1b9cc31"
+			variableName="sfdcBIds" />
+	</munit:before-test>
+	<munit:test name="test-suite-schedulerFlowTest" description="Test" doc:id="236d8fcb-cceb-4135-921a-2f6bcf502e6c">
+		<munit:execution>
+			<scripting:execute doc:name="Sleep for 5s before we start tests" doc:id="68f96218-bb52-4fbc-92c8-1b014988e3e2" engine="groovy">
+				<scripting:code>sleep(5000)</scripting:code>
+			</scripting:execute>
+			<flow-ref doc:name="businessLogicFlow" doc:id="5ab4bfcb-8d3f-4c20-b8a5-cd1d1a6a9165" name="triggerFlow" />
+			<scripting:execute doc:name="Sleep for 30s until the processing is completed" doc:id="b09fe305-3000-4571-b824-8b555395ccb7"
+				engine="groovy">
+				<scripting:code>sleep(30000)</scripting:code>
+			</scripting:execute>
+			<salesforce:query doc:name="Query for Lead, which should be migrated to instance B" doc:id="145cdbc1-3137-4eef-b8e3-7aea91cb9833"
+				config-ref="Salesforce_Sfdc_B_config">
+				<salesforce:salesforce-query>SELECT Id FROM Lead WHERE Email = ':email1'</salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"email1" : vars.leads[0].Email
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			<munit-tools:assert-that doc:name="Assert that we found migrated Lead" doc:id="a8f4453a-10c6-4508-8ecf-64cc08e6129c"
+				expression="#[sizeOf(payload)]" is="#[MunitTools::equalTo(1)]" />
+			<set-variable value="#[(payload map ($.Id)) ++ vars.sfdcBIds]" doc:name="Set IDs to variable sfdcBIds" doc:id="6bd73591-80ee-469f-a71e-380da1b9cc31"
+				variableName="sfdcBIds" />
+			<salesforce:query doc:name="Query for Lead, which should be updated in instance B" doc:id="145cdbc1-3137-4eef-b8e3-7aea91cb9833"
+				config-ref="Salesforce_Sfdc_B_config">
+				<salesforce:salesforce-query>SELECT Country FROM Lead WHERE Email = ':email2'
+				</salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"email2" : vars.leads[1].Email
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			<munit-tools:assert-that doc:name="Assert that we have updated Lead" doc:id="3bbcc0d3-ad82-46de-8502-7c79e9408421"
+				expression="#[payload[0].Country]" is='#[MunitTools::equalTo(vars.leads[1].Country)]' />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="5a8badc9-7da1-413e-889c-697a14ff1897" processor="salesforce:upsert-bulk" times="1"/>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="c6d479d2-fad3-49fd-89d1-bb6689892199" processor="ee:transform" atLeast="1">
+			</munit-tools:verify-call>
+			
+		</munit:validation>
+	</munit:test>
+
+	<munit:after-test name="test-suitAfter_Test" description="After tests actions" doc:id="671a6eba-9998-4f11-8c8f-6bcbe368718c">
+		<salesforce:delete doc:name="Delete testing Leads from A" doc:id="788956ca-8ada-49c2-a3f7-7eb367e735b4" config-ref="Salesforce_Sfdc_A_config">
+			<salesforce:delete-ids><![CDATA[#[vars.sfdcAIds]]]></salesforce:delete-ids>
+		</salesforce:delete>
+		<salesforce:delete doc:id="116d2e04-500c-4219-b9f3-c44979cc4715" doc:name="Delete testing Leads form B" config-ref="Salesforce_Sfdc_B_config">
+			<salesforce:delete-ids><![CDATA[#[vars.sfdcBIds]]]></salesforce:delete-ids>
+		</salesforce:delete>
+	</munit:after-test>
+
+</mule>
