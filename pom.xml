@@ -35,6 +35,15 @@
                     </coverage>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.mule.tools.maven</groupId>
+                <artifactId>mule-maven-plugin</artifactId>
+                <version>${mule.maven.plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <classifier>mule-application-template</classifier>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
