@@ -48,7 +48,7 @@ payload - "Id" ++{
 	"ownersEmail" : payload.Owner.Email
 }]]]></salesforce:parameters>
 							</salesforce:query-single>
-							<logger level="INFO" doc:name="Logger" doc:id="dbbe112f-3d95-4fc6-9f84-4e764b786cdb" message="#[vars.ownerInB]" />
+							<logger level="INFO" doc:name="Log owner in B" doc:id="dbbe112f-3d95-4fc6-9f84-4e764b786cdb" message="#[vars.ownerInB]" />
 							<choice doc:name="Does owner need to be created?" doc:id="d2ecfa6c-a003-48c1-b4dc-02b75e00226f" >
 								<when expression="vars.ownerInB == null" >
 									<salesforce:retrieve type="User" doc:name="Query origin Owner in Salesforce A to get all required field." doc:id="26068e25-b71e-4358-9ea1-7ee58e1c61ff" config-ref="Salesforce_Sfdc_A_config" target="ownerInA">
@@ -104,7 +104,7 @@ payload ++
 							</choice>
 						</when>
 						<otherwise >
-							<logger level="INFO" doc:name="Logger" doc:id="01dd3c04-d0b5-48a3-8db6-940cda87cdca" message="There is no Owner assigned to this Lead."/>
+							<logger level="INFO" doc:name="Log owner isnt assigned" doc:id="01dd3c04-d0b5-48a3-8db6-940cda87cdca" message="There is no Owner assigned to this Lead."/>
 						</otherwise>
 					</choice>
 
