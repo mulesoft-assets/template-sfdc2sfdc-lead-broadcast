@@ -88,7 +88,7 @@ payload map ($.Id)]]></ee:set-variable>
 }]]]></salesforce:parameters>
 			</salesforce:query>
 			<munit-tools:assert-that doc:name="Assert that we found migrated Lead" doc:id="a8f4453a-10c6-4508-8ecf-64cc08e6129c"
-				expression="#[sizeOf(payload)]" is="#[MunitTools::equalTo(1)]" />
+				expression="#[sizeOf(payload)]" is="#[MunitTools::equalTo(1)]" message ="Assert that we found migrated Lead has failed"/>
 			<set-variable value="#[(payload map ($.Id)) ++ vars.sfdcBIds]" doc:name="Set IDs to variable sfdcBIds" doc:id="6bd73591-80ee-469f-a71e-380da1b9cc31"
 				variableName="sfdcBIds" />
 			<salesforce:query doc:name="Query for Lead, which should be updated in instance B" doc:id="145cdbc1-3137-4eef-b8e3-7aea91cb9833"
@@ -102,7 +102,7 @@ payload map ($.Id)]]></ee:set-variable>
 }]]]></salesforce:parameters>
 			</salesforce:query>
 			<munit-tools:assert-that doc:name="Assert that we have updated Lead" doc:id="3bbcc0d3-ad82-46de-8502-7c79e9408421"
-				expression="#[payload[0].Country]" is='#[MunitTools::equalTo(vars.leads[1].Country)]' />
+				expression="#[payload[0].Country]" is='#[MunitTools::equalTo(vars.leads[1].Country)]' message ="Assert that we have updated Lead has failed"/>
 		</munit:execution>
 		<munit:validation >
 			<munit-tools:verify-call doc:name="Verify call" doc:id="5a8badc9-7da1-413e-889c-697a14ff1897" processor="salesforce:upsert-bulk" times="1"/>
